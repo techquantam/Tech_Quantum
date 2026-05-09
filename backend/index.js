@@ -6,8 +6,17 @@ const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+const mongoose = require('mongoose');
+const { v2: cloudinary } = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const models = require('./models');
 
 dotenv.config();
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -177,20 +186,37 @@ const verifyAdmin = (req, res, next) => {
 };
 
 // ==========================================
-// FILE UPLOAD API
+// FILE UPLOAD API (Cloudinary + Local Fallback)
 // ==========================================
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = path.join(__dirname, 'uploads');
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath);
-    }
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '-'));
-  }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
+
+let storage;
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_CLOUD_NAME !== 'your_cloud_name') {
+  storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'cyvanta_uploads',
+      resource_type: 'auto'
+    }
+  });
+} else {
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadPath = path.join(__dirname, 'uploads');
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath);
+      }
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '-'));
+    }
+  });
+}
 const upload = multer({ storage });
 
 app.post('/api/upload', verifyAdmin, upload.single('image'), (req, res) => {
@@ -218,139 +244,153 @@ app.post('/api/admin/login', (req, res) => {
   }
 });
 
+// Helper for frontend compatibility (id instead of _id)
+const toFrontEnd = (doc) => {
+  const obj = doc.toObject();
+  obj.id = obj._id.toString();
+  return obj;
+};
+
 // --- BLOGS API ---
-app.get('/api/blogs', (req, res) => res.json(readJSON('blogs.json')));
-app.get('/api/blogs/:id', (req, res) => {
-  const blogs = readJSON('blogs.json');
-  const blog = blogs.find(b => b.id == req.params.id);
-  if (blog) res.json(blog);
-  else res.status(404).json({ error: 'Blog not found' });
+app.get('/api/blogs', async (req, res) => {
+  const blogs = await models.Blog.find();
+  res.json(blogs.map(toFrontEnd));
 });
-app.post('/api/blogs', verifyAdmin, (req, res) => {
-  const blogs = readJSON('blogs.json');
-  const newBlog = { id: Date.now(), ...req.body };
-  blogs.push(newBlog);
-  writeJSON('blogs.json', blogs);
-  res.json(newBlog);
+app.get('/api/blogs/:id', async (req, res) => {
+  try {
+    const blog = await models.Blog.findById(req.params.id);
+    if (blog) res.json(toFrontEnd(blog));
+    else res.status(404).json({ error: 'Blog not found' });
+  } catch(e) { res.status(404).json({ error: 'Invalid ID' }); }
 });
-app.delete('/api/blogs/:id', verifyAdmin, (req, res) => {
-  let blogs = readJSON('blogs.json');
-  blogs = blogs.filter(b => b.id != req.params.id);
-  writeJSON('blogs.json', blogs);
+app.post('/api/blogs', verifyAdmin, async (req, res) => {
+  const newBlog = new models.Blog(req.body);
+  await newBlog.save();
+  res.json(toFrontEnd(newBlog));
+});
+app.delete('/api/blogs/:id', verifyAdmin, async (req, res) => {
+  await models.Blog.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
 // --- CAREERS API ---
-app.get('/api/careers', (req, res) => res.json(readJSON('careers.json')));
-app.post('/api/careers', verifyAdmin, (req, res) => {
-  const careers = readJSON('careers.json');
-  const newCareer = { id: Date.now(), ...req.body };
-  careers.push(newCareer);
-  writeJSON('careers.json', careers);
-  res.json(newCareer);
+app.get('/api/careers', async (req, res) => {
+  const careers = await models.Career.find();
+  res.json(careers.map(toFrontEnd));
 });
-app.delete('/api/careers/:id', verifyAdmin, (req, res) => {
-  let careers = readJSON('careers.json');
-  careers = careers.filter(c => c.id != req.params.id);
-  writeJSON('careers.json', careers);
+app.post('/api/careers', verifyAdmin, async (req, res) => {
+  const newCareer = new models.Career(req.body);
+  await newCareer.save();
+  res.json(toFrontEnd(newCareer));
+});
+app.delete('/api/careers/:id', verifyAdmin, async (req, res) => {
+  await models.Career.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
 // --- CAROUSEL API ---
-app.get('/api/carousel', (req, res) => res.json(readJSON('carousel.json')));
-app.post('/api/carousel', verifyAdmin, (req, res) => {
-  // Overwrite the entire array of URLs
-  writeJSON('carousel.json', req.body.images);
+app.get('/api/carousel', async (req, res) => {
+  const images = await models.Carousel.find();
+  res.json(images.map(img => img.imageUrl));
+});
+app.post('/api/carousel', verifyAdmin, async (req, res) => {
+  await models.Carousel.deleteMany({});
+  const promises = req.body.images.map(url => new models.Carousel({ imageUrl: url }).save());
+  await Promise.all(promises);
   res.json({ success: true });
 });
 
 // --- PROJECTS API ---
-app.get('/api/projects', (req, res) => res.json(readJSON('projects.json')));
-app.post('/api/projects', verifyAdmin, (req, res) => {
-  const projects = readJSON('projects.json');
-  const newProject = { id: Date.now(), ...req.body };
-  projects.push(newProject);
-  writeJSON('projects.json', projects);
-  res.json(newProject);
+app.get('/api/projects', async (req, res) => {
+  const projects = await models.Project.find();
+  res.json(projects.map(toFrontEnd));
 });
-app.delete('/api/projects/:id', verifyAdmin, (req, res) => {
-  let projects = readJSON('projects.json');
-  projects = projects.filter(p => p.id != req.params.id);
-  writeJSON('projects.json', projects);
+app.post('/api/projects', verifyAdmin, async (req, res) => {
+  const newProject = new models.Project(req.body);
+  await newProject.save();
+  res.json(toFrontEnd(newProject));
+});
+app.delete('/api/projects/:id', verifyAdmin, async (req, res) => {
+  await models.Project.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
 // --- INTERNSHIP HERO API ---
-app.get('/api/internship/hero', (req, res) => res.json(readJSON('internship_hero.json')));
-app.post('/api/internship/hero', verifyAdmin, (req, res) => {
-  writeJSON('internship_hero.json', req.body);
+app.get('/api/internship/hero', async (req, res) => {
+  const hero = await models.InternHero.findOne();
+  res.json(hero ? toFrontEnd(hero) : { videoUrl: '' });
+});
+app.post('/api/internship/hero', verifyAdmin, async (req, res) => {
+  await models.InternHero.deleteMany({});
+  const hero = new models.InternHero(req.body);
+  await hero.save();
   res.json({ success: true });
 });
 
 // --- INTERNSHIP TESTIMONIALS API ---
-app.get('/api/internship/testimonials', (req, res) => res.json(readJSON('internship_testimonials.json')));
-app.post('/api/internship/testimonials', verifyAdmin, (req, res) => {
-  const testimonials = readJSON('internship_testimonials.json');
-  const newTestimonial = { id: Date.now(), ...req.body };
-  testimonials.push(newTestimonial);
-  writeJSON('internship_testimonials.json', testimonials);
-  res.json(newTestimonial);
+app.get('/api/internship/testimonials', async (req, res) => {
+  const tests = await models.InternTestimonial.find();
+  res.json(tests.map(toFrontEnd));
 });
-app.delete('/api/internship/testimonials/:id', verifyAdmin, (req, res) => {
-  let testimonials = readJSON('internship_testimonials.json');
-  testimonials = testimonials.filter(t => t.id != req.params.id);
-  writeJSON('internship_testimonials.json', testimonials);
+app.post('/api/internship/testimonials', verifyAdmin, async (req, res) => {
+  const t = new models.InternTestimonial(req.body);
+  await t.save();
+  res.json(toFrontEnd(t));
+});
+app.delete('/api/internship/testimonials/:id', verifyAdmin, async (req, res) => {
+  await models.InternTestimonial.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
 // --- INTERNSHIP FAQS API ---
-app.get('/api/internship/faqs', (req, res) => res.json(readJSON('internship_faqs.json')));
-app.post('/api/internship/faqs', verifyAdmin, (req, res) => {
-  const faqs = readJSON('internship_faqs.json');
-  const newFaq = { id: Date.now(), ...req.body };
-  faqs.push(newFaq);
-  writeJSON('internship_faqs.json', faqs);
-  res.json(newFaq);
+app.get('/api/internship/faqs', async (req, res) => {
+  const faqs = await models.InternFaq.find();
+  res.json(faqs.map(toFrontEnd));
 });
-app.delete('/api/internship/faqs/:id', verifyAdmin, (req, res) => {
-  let faqs = readJSON('internship_faqs.json');
-  faqs = faqs.filter(f => f.id != req.params.id);
-  writeJSON('internship_faqs.json', faqs);
+app.post('/api/internship/faqs', verifyAdmin, async (req, res) => {
+  const faq = new models.InternFaq(req.body);
+  await faq.save();
+  res.json(toFrontEnd(faq));
+});
+app.delete('/api/internship/faqs/:id', verifyAdmin, async (req, res) => {
+  await models.InternFaq.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
 // --- INTERNSHIP COLLEGES API ---
-app.get('/api/internship/colleges', (req, res) => res.json(readJSON('internship_colleges.json')));
-app.post('/api/internship/colleges', verifyAdmin, (req, res) => {
-  const colleges = readJSON('internship_colleges.json');
-  const newCollege = { id: Date.now(), ...req.body };
-  colleges.push(newCollege);
-  writeJSON('internship_colleges.json', colleges);
-  res.json(newCollege);
+app.get('/api/internship/colleges', async (req, res) => {
+  const cols = await models.InternCollege.find();
+  res.json(cols.map(toFrontEnd));
 });
-app.delete('/api/internship/colleges/:id', verifyAdmin, (req, res) => {
-  let colleges = readJSON('internship_colleges.json');
-  colleges = colleges.filter(c => c.id != req.params.id);
-  writeJSON('internship_colleges.json', colleges);
+app.post('/api/internship/colleges', verifyAdmin, async (req, res) => {
+  const c = new models.InternCollege(req.body);
+  await c.save();
+  res.json(toFrontEnd(c));
+});
+app.delete('/api/internship/colleges/:id', verifyAdmin, async (req, res) => {
+  await models.InternCollege.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
 // --- INTERNSHIP GALLERY API ---
-app.get('/api/internship/gallery', (req, res) => res.json(readJSON('internship_gallery.json')));
-app.post('/api/internship/gallery', verifyAdmin, (req, res) => {
-  const gallery = readJSON('internship_gallery.json');
-  const newImage = { id: Date.now(), ...req.body };
-  gallery.push(newImage);
-  writeJSON('internship_gallery.json', gallery);
-  res.json(newImage);
+app.get('/api/internship/gallery', async (req, res) => {
+  const gals = await models.InternGallery.find();
+  res.json(gals.map(toFrontEnd));
 });
-app.delete('/api/internship/gallery/:id', verifyAdmin, (req, res) => {
-  let gallery = readJSON('internship_gallery.json');
-  gallery = gallery.filter(g => g.id != req.params.id);
-  writeJSON('internship_gallery.json', gallery);
+app.post('/api/internship/gallery', verifyAdmin, async (req, res) => {
+  const g = new models.InternGallery(req.body);
+  await g.save();
+  res.json(toFrontEnd(g));
+});
+app.delete('/api/internship/gallery/:id', verifyAdmin, async (req, res) => {
+  await models.InternGallery.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+  });
+}
+
+module.exports = app;

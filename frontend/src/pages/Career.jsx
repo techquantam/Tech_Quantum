@@ -9,7 +9,7 @@ const Career = () => {
   const [selectedJob, setSelectedJob] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/careers')
+    fetch(`${import.meta.env.VITE_API_URL}/api/careers`)
       .then(res => res.json())
       .then(data => setPositions(data))
       .catch(err => console.error(err));

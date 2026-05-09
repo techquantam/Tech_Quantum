@@ -47,15 +47,15 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     try {
       const [bRes, cRes, imgRes, pRes, iHeroRes, iTestiRes, iFaqRes, iColRes, iGalRes] = await Promise.all([
-        fetch('http://localhost:5000/api/blogs'),
-        fetch('http://localhost:5000/api/careers'),
-        fetch('http://localhost:5000/api/carousel'),
-        fetch('http://localhost:5000/api/projects'),
-        fetch('http://localhost:5000/api/internship/hero'),
-        fetch('http://localhost:5000/api/internship/testimonials'),
-        fetch('http://localhost:5000/api/internship/faqs'),
-        fetch('http://localhost:5000/api/internship/colleges'),
-        fetch('http://localhost:5000/api/internship/gallery')
+        fetch(`${import.meta.env.VITE_API_URL}/api/blogs`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/careers`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/carousel`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/projects`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/internship/hero`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/internship/testimonials`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/internship/faqs`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/internship/colleges`),
+        fetch(`${import.meta.env.VITE_API_URL}/api/internship/gallery`)
       ]);
       setBlogs(await bRes.json());
       setCareers(await cRes.json());
@@ -78,7 +78,7 @@ const AdminDashboard = () => {
 
   const deleteItem = async (type, id) => {
     if (!window.confirm('Are you sure?')) return;
-    await fetch(`http://localhost:5000/api/${type}/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/${type}/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -88,7 +88,7 @@ const AdminDashboard = () => {
   const handleFileUpload = async (file) => {
     const formData = new FormData();
     formData.append('image', file);
-    const res = await fetch('http://localhost:5000/api/upload', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/upload`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${token}` },
       body: formData
@@ -109,7 +109,7 @@ const AdminDashboard = () => {
         return;
       }
     }
-    await fetch('http://localhost:5000/api/blogs', {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/blogs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ ...blogForm, image: finalImageUrl })
@@ -121,7 +121,7 @@ const AdminDashboard = () => {
 
   const addCareer = async (e) => {
     e.preventDefault();
-    await fetch('http://localhost:5000/api/careers', {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/careers`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify(careerForm)
@@ -136,7 +136,7 @@ const AdminDashboard = () => {
     try {
       const uploadedUrl = await handleFileUpload(carouselImageFile);
       const newImages = [...carousel, uploadedUrl];
-      await fetch('http://localhost:5000/api/carousel', {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/carousel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ images: newImages })
@@ -151,7 +151,7 @@ const AdminDashboard = () => {
   const removeCarouselImage = async (index) => {
     if (!window.confirm('Remove image?')) return;
     const newImages = carousel.filter((_, i) => i !== index);
-    await fetch('http://localhost:5000/api/carousel', {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/carousel`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ images: newImages })
@@ -170,7 +170,7 @@ const AdminDashboard = () => {
         return;
       }
     }
-    await fetch('http://localhost:5000/api/projects', {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/projects`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ ...projectForm, image: finalImageUrl })
@@ -184,7 +184,7 @@ const AdminDashboard = () => {
     if (!internHeroFile) return;
     try {
       const videoUrl = await handleFileUpload(internHeroFile);
-      await fetch('http://localhost:5000/api/internship/hero', {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/internship/hero`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ videoUrl })
@@ -198,7 +198,7 @@ const AdminDashboard = () => {
 
   const addInternTestimonial = async (e) => {
     e.preventDefault();
-    await fetch('http://localhost:5000/api/internship/testimonials', {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/internship/testimonials`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify(internTestimonialForm)
@@ -209,7 +209,7 @@ const AdminDashboard = () => {
 
   const addInternFaq = async (e) => {
     e.preventDefault();
-    await fetch('http://localhost:5000/api/internship/faqs', {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/internship/faqs`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify(internFaqForm)
@@ -223,7 +223,7 @@ const AdminDashboard = () => {
     if (!internCollegeFile) return;
     try {
       const imageUrl = await handleFileUpload(internCollegeFile);
-      await fetch('http://localhost:5000/api/internship/colleges', {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/internship/colleges`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ imageUrl })
@@ -240,7 +240,7 @@ const AdminDashboard = () => {
     if (!internGalleryFile) return;
     try {
       const imageUrl = await handleFileUpload(internGalleryFile);
-      await fetch('http://localhost:5000/api/internship/gallery', {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/internship/gallery`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ imageUrl })

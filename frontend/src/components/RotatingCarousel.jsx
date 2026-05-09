@@ -4,7 +4,7 @@ const RotatingCarousel = () => {
   const [images, setImages] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/carousel')
+    fetch(`${import.meta.env.VITE_API_URL}/api/carousel`)
       .then(res => res.json())
       .then(data => setImages(data))
       .catch(err => console.error(err));

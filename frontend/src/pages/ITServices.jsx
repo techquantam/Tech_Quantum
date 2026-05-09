@@ -72,7 +72,7 @@ const ITServices = () => {
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/projects')
+    fetch(`${import.meta.env.VITE_API_URL}/api/projects`)
       .then(res => res.json())
       .then(data => {
         const itProjects = data.filter(p => p.category === 'IT');
