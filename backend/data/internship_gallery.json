@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1778142464922,
+    "imageUrl": "http://localhost:5000/uploads/1778142464896-g1.jpeg"
+  },
+  {
+    "id": 1778142479332,
+    "imageUrl": "http://localhost:5000/uploads/1778142479312-1.jpeg"
+  },
+  {
+    "id": 1778235557884,
+    "imageUrl": "http://localhost:5000/uploads/1778235557821-g2.jpeg"
+  },
+  {
+    "id": 1778235631949,
+    "imageUrl": "http://localhost:5000/uploads/1778235631933-g3.jpeg"
+  },
+  {
+    "id": 1778235645020,
+    "imageUrl": "http://localhost:5000/uploads/1778235645004-g4.jpeg"
+  }
+]

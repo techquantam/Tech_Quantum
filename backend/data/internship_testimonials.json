@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1,
+    "name": "Arjun Kumar",
+    "rating": 5,
+    "text": "This internship helped me build real-world development skills."
+  },
+  {
+    "id": 1778141639948,
+    "name": "Priya Sharma [ MERN Stack Trainee ]",
+    "rating": "5",
+    "text": "“I learned React, Node.js, and API integration through live training sessions. The mentors were very supportive throughout the journey.”"
+  },
+  {
+    "id": 1778141690154,
+    "name": "Rohit Verma [Frontend Development Student]",
+    "rating": "5",
+    "text": "“Cyvanta Tech Quantum helped me improve my coding skills and guided me in building professional projects for my portfolio.”"
+  },
+  {
+    "id": 1778141735133,
+    "name": "Anjali Singh  [AI & Robotics Learner]",
+    "rating": "5",
+    "text": "“The AI & Robotics workshop was one of the best learning experiences I’ve had. Practical sessions made complex concepts easy to understand.”"
+  }
+]

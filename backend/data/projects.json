@@ -1,0 +1,58 @@
+[
+  { 
+    "id": 1, 
+    "title": "Enterprise Cloud Migration", 
+    "description": "Successfully migrated legacy systems of a top-tier retail company to a robust, scalable cloud infrastructure, reducing downtime by 99%.",
+    "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+    "category": "IT"
+  },
+  { 
+    "id": 2, 
+    "title": "AI Customer Support Bot", 
+    "description": "Developed an advanced NLP-driven chatbot for a telecom giant, handling over 100,000 customer queries daily with 95% accuracy.",
+    "image": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=600&q=80",
+    "category": "IT"
+  },
+  { 
+    "id": 3, 
+    "title": "Secure Banking API Gateway", 
+    "description": "Built a highly secure, high-throughput API gateway for a regional bank, ensuring instantaneous and encrypted cross-border transactions.",
+    "image": "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?auto=format&fit=crop&w=600&q=80",
+    "category": "IT"
+  },
+  { 
+    "id": 4, 
+    "title": "Global E-Commerce Platform", 
+    "description": "Designed and deployed a scalable MERN stack e-commerce platform that successfully handled 5 million concurrent users during Black Friday.",
+    "image": "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80",
+    "category": "IT"
+  },
+  { 
+    "id": 5, 
+    "title": "Smart Campus Initiative", 
+    "description": "Implemented a complete digital transformation for a leading university, integrating AI-driven attendance and resource management.",
+    "image": "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=600&q=80",
+    "category": "Education"
+  },
+  { 
+    "id": 6, 
+    "title": "Virtual Reality Science Labs", 
+    "description": "Created immersive VR software for high schools, allowing students to conduct complex chemistry experiments safely in a virtual space.",
+    "image": "https://images.unsplash.com/photo-1593508512255-86ab42a8e620?auto=format&fit=crop&w=600&q=80",
+    "category": "Education"
+  },
+  { 
+    "id": 7, 
+    "title": "Gamified Coding Curriculum", 
+    "description": "Partnered with local school districts to deploy a gamified, interactive coding platform that increased student engagement by 300%.",
+    "image": "https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80",
+    "category": "Education"
+  },
+  { 
+    "id": 8, 
+    "title": "AI Mentorship Dashboard", 
+    "description": "Developed an AI-powered dashboard that tracks student performance metrics and provides customized learning paths for accelerated growth.",
+    "image": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
+    "category": "Education"
+  }
+]
