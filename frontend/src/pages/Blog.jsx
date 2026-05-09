@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Blog = () => {
   const [posts, setPosts] = useState([]);
@@ -33,13 +34,13 @@ const Blog = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {posts.map((post, index) => (
-            <motion.div
-              key={post.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden group cursor-pointer hover:-translate-y-2 transition-transform duration-300"
-            >
+              <Link to={`/blog/${post.id}`} key={post.id} className="block group">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white rounded-3xl shadow-lg border border-slate-100 overflow-hidden cursor-pointer hover:-translate-y-2 transition-transform duration-300 h-full"
+                >
               <div className="h-48 bg-slate-200 w-full relative overflow-hidden">
                 {/* Placeholder Image */}
                 <img src={post.image || 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?auto=format&fit=crop&w=600&q=80'} alt="Blog Cover" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
@@ -51,7 +52,8 @@ const Blog = () => {
                 <p className="text-sm text-slate-400 font-medium mb-3">{post.date}</p>
                 <h3 className="text-xl font-bold text-slate-800 group-hover:text-purple-600 transition-colors">{post.title}</h3>
               </div>
-            </motion.div>
+                </motion.div>
+              </Link>
           ))}
         </div>
       </div>

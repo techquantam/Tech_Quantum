@@ -10,7 +10,7 @@ const AdminDashboard = () => {
   const [projects, setProjects] = useState([]);
   
   // Form States
-  const [blogForm, setBlogForm] = useState({ title: '', date: '', category: '', image: '' });
+  const [blogForm, setBlogForm] = useState({ title: '', date: '', category: '', image: '', content: '' });
   const [blogImageFile, setBlogImageFile] = useState(null);
   const [careerForm, setCareerForm] = useState({ title: '', type: '', location: '' });
   const [carouselImageFile, setCarouselImageFile] = useState(null);
@@ -114,7 +114,7 @@ const AdminDashboard = () => {
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ ...blogForm, image: finalImageUrl })
     });
-    setBlogForm({ title: '', date: '', category: '', image: '' });
+    setBlogForm({ title: '', date: '', category: '', image: '', content: '' });
     setBlogImageFile(null);
     fetchData();
   };
@@ -308,6 +308,7 @@ const AdminDashboard = () => {
                 <input required placeholder="Title" value={blogForm.title} onChange={e => setBlogForm({...blogForm, title: e.target.value})} className="border p-3 rounded-lg"/>
                 <input required placeholder="Date (e.g. Oct 12, 2023)" value={blogForm.date} onChange={e => setBlogForm({...blogForm, date: e.target.value})} className="border p-3 rounded-lg"/>
                 <input required placeholder="Category" value={blogForm.category} onChange={e => setBlogForm({...blogForm, category: e.target.value})} className="border p-3 rounded-lg"/>
+                <textarea required placeholder="Blog Content" value={blogForm.content} onChange={e => setBlogForm({...blogForm, content: e.target.value})} className="border p-3 rounded-lg md:col-span-2" rows="4"/>
                 <input type="file" accept="image/*" onChange={e => setBlogImageFile(e.target.files[0])} className="border p-2 rounded-lg bg-slate-50"/>
                 <button type="submit" className="md:col-span-2 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700">Publish Blog</button>
               </form>

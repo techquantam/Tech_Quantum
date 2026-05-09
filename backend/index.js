@@ -164,7 +164,7 @@ const writeJSON = (filename, data) => {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
 };
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'cyvanta@123';
 const ADMIN_TOKEN = 'cyvanta_admin_token_secure';
 
 const verifyAdmin = (req, res, next) => {
@@ -220,6 +220,12 @@ app.post('/api/admin/login', (req, res) => {
 
 // --- BLOGS API ---
 app.get('/api/blogs', (req, res) => res.json(readJSON('blogs.json')));
+app.get('/api/blogs/:id', (req, res) => {
+  const blogs = readJSON('blogs.json');
+  const blog = blogs.find(b => b.id == req.params.id);
+  if (blog) res.json(blog);
+  else res.status(404).json({ error: 'Blog not found' });
+});
 app.post('/api/blogs', verifyAdmin, (req, res) => {
   const blogs = readJSON('blogs.json');
   const newBlog = { id: Date.now(), ...req.body };
