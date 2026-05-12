@@ -157,6 +157,57 @@ Thought: ${thought || 'None'}
   }
 });
 
+app.post('/api/internship-enquiry', async (req, res) => {
+  const { name, email, phone, college, branch, year, domain, thought } = req.body;
+
+  if (!name || !email || !phone || !college || !branch || !domain) {
+    return res.status(400).json({ error: 'Please fill all required fields.' });
+  }
+
+  // 1. Send Email Notification
+  const mailOptions = {
+    from: process.env.EMAIL_USER || 'your_email@gmail.com',
+    to: 'techquantum.india@gmail.com',
+    subject: `New Internship Enquiry from ${name}`,
+    html: `
+      <h2>New Internship Enquiry</h2>
+      <p><strong>Name:</strong> ${name}</p>
+      <p><strong>Email:</strong> ${email}</p>
+      <p><strong>Phone:</strong> ${phone}</p>
+      <p><strong>College:</strong> ${college}</p>
+      <p><strong>Branch:</strong> ${branch}</p>
+      <p><strong>Year:</strong> ${year}</p>
+      <p><strong>Domain:</strong> ${domain}</p>
+      <p><strong>Any Thought:</strong> ${thought || 'N/A'}</p>
+    `,
+  };
+
+  try {
+    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      await transporter.sendMail(mailOptions);
+      console.log('Internship Enquiry Email sent successfully');
+    } else {
+      console.log('Email would have been sent (credentials missing):', mailOptions.subject);
+    }
+
+    // 2. Send WhatsApp Notification
+    const extraDetails = `
+Enquiry Details:
+College: ${college}
+Branch: ${branch}
+Year: ${year}
+Domain: ${domain}
+Thought: ${thought || 'None'}
+`;
+    sendWhatsAppNotification(name, email, phone, 'Internship Enquiry', extraDetails);
+
+    res.status(200).json({ success: true, message: 'Enquiry submitted successfully!' });
+  } catch (error) {
+    console.error('Error processing enquiry:', error);
+    res.status(500).json({ error: 'Failed to submit enquiry.' });
+  }
+});
+
 // ==========================================
 // ADMIN PANEL APIS (JSON File DB)
 // ==========================================
@@ -223,7 +274,7 @@ app.post('/api/upload', verifyAdmin, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' });
   }
-  const imageUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+  const imageUrl = req.file.path || `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
   res.json({ imageUrl });
 });
 
@@ -231,7 +282,7 @@ app.post('/api/upload-receipt', upload.single('receipt'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No receipt file uploaded' });
   }
-  const receiptUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+  const receiptUrl = req.file.path || `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
   res.json({ receiptUrl });
 });
 
@@ -387,10 +438,8 @@ app.delete('/api/internship/gallery/:id', verifyAdmin, async (req, res) => {
   res.json({ success: true });
 });
 
-if (process.env.NODE_ENV !== 'production') {
-  app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
-  });
-}
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
 
 module.exports = app;

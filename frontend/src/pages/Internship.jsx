@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import ContactModal from '../components/ContactModal';
 import InternshipRegistrationModal from '../components/InternshipRegistrationModal';
+import InternshipEnquiryModal from '../components/InternshipEnquiryModal';
 
 // Static Data
 const programs = [
@@ -18,7 +19,7 @@ const programs = [
   { icon: Smartphone, title: "App Development", level: "Beginner to Advanced", projects: 3, tools: "React Native, Firebase", color: "from-green-400 to-emerald-600" },
   { icon: Terminal, title: "Programming & DSA", level: "Beginner to Advanced", projects: 200, tools: "C++, Java, Python", color: "from-orange-400 to-amber-600" },
   { icon: Bot, title: "IoT & Robotics", level: "Intermediate", projects: 4, tools: "Arduino, Raspberry Pi", color: "from-red-500 to-rose-600" },
-  { icon: LineChart, title: "Data Analytics", level: "Beginner to Intermediate", projects: 4, tools: "Python, PowerBI", color: "from-indigo-500 to-blue-600" }
+  { icon: Layout, title: "AutoCAD & Design", level: "Beginner to Intermediate", projects: 4, tools: "AutoCAD, SolidWorks", color: "from-indigo-500 to-blue-600" }
 ];
 
 const whyChooseUs = [
@@ -56,6 +57,7 @@ const stats = [
 const Internship = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRegModalOpen, setIsRegModalOpen] = useState(false);
+  const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
   const [testiIndex, setTestiIndex] = useState(0);
 
@@ -114,8 +116,8 @@ const Internship = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-5 justify-center mb-16">
-              <motion.button whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(249, 115, 22, 0.6)" }} whileTap={{ scale: 0.95 }} onClick={() => setIsRegModalOpen(true)} className="px-8 py-4 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white rounded-xl font-black shadow-lg transition-all flex items-center justify-center gap-2">
-                Apply Now <ArrowRight className="w-5 h-5" />
+              <motion.button whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(249, 115, 22, 0.6)" }} whileTap={{ scale: 0.95 }} onClick={() => setIsEnquiryModalOpen(true)} className="px-8 py-4 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white rounded-xl font-black shadow-lg transition-all flex items-center justify-center gap-2">
+                Enquiry Now <ArrowRight className="w-5 h-5" />
               </motion.button>
               <button onClick={() => document.getElementById('programs').scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-white/10 hover:bg-orange-500/20 text-white border border-orange-500/50 hover:border-orange-500 rounded-xl font-bold backdrop-blur-md transition-all shadow-lg">
                 View Programs
@@ -138,7 +140,7 @@ const Internship = () => {
       <section id="programs" className="py-24 bg-white relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">Trending Training Programs</h2>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-4">Trending Summer Training Programs</h2>
             <p className="text-lg text-slate-500 font-medium">Master the technologies that top companies are hiring for.</p>
           </div>
 
@@ -157,6 +159,7 @@ const Internship = () => {
                   <div className="flex items-center gap-3 text-slate-600 font-medium"><Award className="w-5 h-5 text-blue-500" /> Level: {prog.level}</div>
                   <div className="flex items-center gap-3 text-slate-600 font-medium"><Briefcase className="w-5 h-5 text-purple-500" /> {prog.projects} Live Projects</div>
                   <div className="flex items-center gap-3 text-slate-600 font-medium"><Settings className="w-5 h-5 text-orange-500" /> Tools: {prog.tools}</div>
+                  <div className="flex items-center gap-3 text-slate-900 font-extrabold mt-2 pt-2 border-t border-slate-100"><Zap className="w-5 h-5 text-yellow-500" /> Fee: ₹3,500</div>
                 </div>
 
                 <button onClick={() => setIsRegModalOpen(true)} className="w-full py-3 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white rounded-xl font-bold transition-all shadow-md hover:shadow-lg">
@@ -628,8 +631,8 @@ const Internship = () => {
 
           <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} className="relative z-10">
             <h2 className="text-4xl md:text-6xl font-extrabold text-white mb-8 tracking-tight">Ready To Start Your Tech Journey?</h2>
-            <button onClick={() => setIsRegModalOpen(true)} className="px-10 py-5 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white rounded-2xl font-black text-xl shadow-[0_0_30px_rgba(249,115,22,0.5)] transition-all transform hover:scale-105">
-              Apply Now
+            <button onClick={() => setIsEnquiryModalOpen(true)} className="px-10 py-5 bg-gradient-to-r from-orange-400 to-orange-500 hover:from-orange-500 hover:to-orange-600 text-white rounded-2xl font-black text-xl shadow-[0_0_30px_rgba(249,115,22,0.5)] transition-all transform hover:scale-105">
+              Enquiry Now
             </button>
           </motion.div>
         </div>
@@ -640,6 +643,9 @@ const Internship = () => {
       
       {/* Internship Registration Modal */}
       <InternshipRegistrationModal isOpen={isRegModalOpen} onClose={() => setIsRegModalOpen(false)} />
+      
+      {/* Internship Enquiry Modal */}
+      <InternshipEnquiryModal isOpen={isEnquiryModalOpen} onClose={() => setIsEnquiryModalOpen(false)} />
     </div>
   );
 };
