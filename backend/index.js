@@ -58,6 +58,9 @@ const sendWhatsAppNotification = async (name, email, phone, service, message) =>
     }
   } catch (error) {
     console.error('Error sending WhatsApp message:', error.message);
+    if (error.response && error.response.data) {
+      console.error('WhatsApp API Error Details:', error.response.data);
+    }
   }
 };
 
