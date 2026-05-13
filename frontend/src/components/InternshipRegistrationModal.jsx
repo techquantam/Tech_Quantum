@@ -22,7 +22,7 @@ const InternshipRegistrationModal = ({ isOpen, onClose }) => {
       if (receiptFile) {
         const fileData = new FormData();
         fileData.append('receipt', receiptFile);
-        const uploadRes = await fetch(`${import.meta.env.VITE_API_URL}/api/upload-receipt`, {
+        const uploadRes = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/upload-receipt`, {
           method: 'POST',
           body: fileData
         });
@@ -30,7 +30,7 @@ const InternshipRegistrationModal = ({ isOpen, onClose }) => {
         receiptUrl = uploadData.receiptUrl;
       }
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/internship-registration`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship-registration`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, receiptUrl })
@@ -213,3 +213,4 @@ const InternshipRegistrationModal = ({ isOpen, onClose }) => {
 };
 
 export default InternshipRegistrationModal;
+

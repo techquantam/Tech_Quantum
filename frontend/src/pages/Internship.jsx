@@ -69,11 +69,11 @@ const Internship = () => {
   const [gallery, setGallery] = useState([]);
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/internship/hero`).then(r => r.json()).then(d => setHeroVideo(d.videoUrl)).catch(console.error);
-    fetch(`${import.meta.env.VITE_API_URL}/api/internship/testimonials`).then(r => r.json()).then(d => setTestimonials(d)).catch(console.error);
-    fetch(`${import.meta.env.VITE_API_URL}/api/internship/faqs`).then(r => r.json()).then(d => setFaqs(d)).catch(console.error);
-    fetch(`${import.meta.env.VITE_API_URL}/api/internship/colleges`).then(r => r.json()).then(d => setColleges(d)).catch(console.error);
-    fetch(`${import.meta.env.VITE_API_URL}/api/internship/gallery`).then(r => r.json()).then(d => setGallery(d)).catch(console.error);
+    fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/hero`).then(r => r.json()).then(d => setHeroVideo(d.videoUrl)).catch(console.error);
+    fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/testimonials`).then(r => r.json()).then(d => setTestimonials(d)).catch(console.error);
+    fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/faqs`).then(r => r.json()).then(d => setFaqs(d)).catch(console.error);
+    fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/colleges`).then(r => r.json()).then(d => setColleges(d)).catch(console.error);
+    fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/gallery`).then(r => r.json()).then(d => setGallery(d)).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -651,3 +651,4 @@ const Internship = () => {
 };
 
 export default Internship;
+

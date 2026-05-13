@@ -21,7 +21,7 @@ const ContactForm = ({ serviceName }) => {
 
     try {
       // Send data to backend (which sends Email AND WhatsApp)
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/contact`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/contact`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -144,3 +144,4 @@ const ContactForm = ({ serviceName }) => {
 };
 
 export default ContactForm;
+
