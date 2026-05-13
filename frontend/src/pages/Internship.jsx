@@ -157,7 +157,7 @@ const Internship = () => {
 
                 <div className="space-y-3 mb-8">
                   <div className="flex items-center gap-3 text-slate-600 font-medium"><Award className="w-5 h-5 text-blue-500" /> Level: {prog.level}</div>
-                  <div className="flex items-center gap-3 text-slate-600 font-medium"><Briefcase className="w-5 h-5 text-purple-500" /> {prog.projects} Live Projects</div>
+                  <div className="flex items-center gap-3 text-slate-600 font-medium"><Clock className="w-5 h-5 text-purple-500" /> Duration: 28 / 45 / 60 Days</div>
                   <div className="flex items-center gap-3 text-slate-600 font-medium"><Settings className="w-5 h-5 text-orange-500" /> Tools: {prog.tools}</div>
                   <div className="flex items-center gap-3 text-slate-900 font-extrabold mt-2 pt-2 border-t border-slate-100"><Zap className="w-5 h-5 text-yellow-500" /> Fee: ₹3,500</div>
                 </div>
