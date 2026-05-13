@@ -26,16 +26,34 @@ app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Set up Nodemailer transporter
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER || 'abhisakhhusingh@gmail.com',
-    pass: process.env.EMAIL_PASS || 'your_app_password',
-  },
-});
+// Helper function to send Email via Brevo API
+const sendBrevoEmail = async (subject, content, isHtml = false) => {
+  const BREVO_API_KEY = process.env.BREVO_API_KEY;
+  
+  const payload = {
+    sender: { name: "Cyvanta Tech Quantum", email: "techquantum.india@gmail.com" },
+    to: [{ email: "techquantum.india@gmail.com" }],
+    subject: subject,
+  };
+
+  if (isHtml) {
+    payload.htmlContent = content;
+  } else {
+    payload.textContent = content;
+  }
+
+  try {
+    await axios.post('https://api.brevo.com/v3/smtp/email', payload, {
+      headers: {
+        'api-key': BREVO_API_KEY,
+        'Content-Type': 'application/json',
+      }
+    });
+    console.log('Email sent successfully via Brevo');
+  } catch (error) {
+    console.error('Brevo Email error:', error.response ? error.response.data : error.message);
+  }
+};
 
 // Helper function to send WhatsApp via API (Placeholder for UltraMsg/Twilio)
 const sendWhatsAppNotification = async (name, email, phone, service, message) => {
@@ -92,13 +110,8 @@ app.post('/api/contact', async (req, res) => {
   };
 
   try {
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      transporter.sendMail(mailOptions)
-        .then(() => console.log('Email sent successfully'))
-        .catch(err => console.error('Email error:', err));
-    } else {
-      console.log('Email would have been sent (credentials missing):', mailOptions.subject);
-    }
+    // Send Email via Brevo asynchronously (don't block the response)
+    sendBrevoEmail(mailOptions.subject, mailOptions.text, false);
 
     // 2. Send WhatsApp Notification asynchronously (don't block the response)
     sendWhatsAppNotification(name, email, phone, service, message);
@@ -137,13 +150,8 @@ app.post('/api/internship-registration', async (req, res) => {
   };
 
   try {
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      transporter.sendMail(mailOptions)
-        .then(() => console.log('Internship Registration Email sent successfully'))
-        .catch(err => console.error('Internship Registration Email error:', err));
-    } else {
-      console.log('Email would have been sent (credentials missing):', mailOptions.subject);
-    }
+    // Send Email via Brevo asynchronously
+    sendBrevoEmail(mailOptions.subject, mailOptions.html, true);
 
     // 2. Send WhatsApp Notification
     const extraDetails = `
@@ -190,13 +198,8 @@ app.post('/api/internship-enquiry', async (req, res) => {
   };
 
   try {
-    if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      transporter.sendMail(mailOptions)
-        .then(() => console.log('Internship Enquiry Email sent successfully'))
-        .catch(err => console.error('Internship Enquiry Email error:', err));
-    } else {
-      console.log('Email would have been sent (credentials missing):', mailOptions.subject);
-    }
+    // Send Email via Brevo asynchronously
+    sendBrevoEmail(mailOptions.subject, mailOptions.html, true);
 
     // 2. Send WhatsApp Notification
     const extraDetails = `
