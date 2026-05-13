@@ -91,8 +91,9 @@ app.post('/api/contact', async (req, res) => {
 
   try {
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      await transporter.sendMail(mailOptions);
-      console.log('Email sent successfully');
+      transporter.sendMail(mailOptions)
+        .then(() => console.log('Email sent successfully'))
+        .catch(err => console.error('Email error:', err));
     } else {
       console.log('Email would have been sent (credentials missing):', mailOptions.subject);
     }
@@ -135,8 +136,9 @@ app.post('/api/internship-registration', async (req, res) => {
 
   try {
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      await transporter.sendMail(mailOptions);
-      console.log('Internship Registration Email sent successfully');
+      transporter.sendMail(mailOptions)
+        .then(() => console.log('Internship Registration Email sent successfully'))
+        .catch(err => console.error('Internship Registration Email error:', err));
     } else {
       console.log('Email would have been sent (credentials missing):', mailOptions.subject);
     }
@@ -187,8 +189,9 @@ app.post('/api/internship-enquiry', async (req, res) => {
 
   try {
     if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-      await transporter.sendMail(mailOptions);
-      console.log('Internship Enquiry Email sent successfully');
+      transporter.sendMail(mailOptions)
+        .then(() => console.log('Internship Enquiry Email sent successfully'))
+        .catch(err => console.error('Internship Enquiry Email error:', err));
     } else {
       console.log('Email would have been sent (credentials missing):', mailOptions.subject);
     }
