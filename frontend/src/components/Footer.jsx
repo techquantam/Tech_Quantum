@@ -67,14 +67,14 @@ const Footer = () => {
               </li>
               <li className="flex items-start gap-3">
                 <MapPin className="w-4 h-4 text-white shrink-0 mt-1" />
-                <span className="leading-relaxed">B-2/390, Sitapur Rd, Sector-A, Secheme, <br />engineering chauraha,Aliganj, Lucknow, Uttar Pradesh 226024</span>
+                <span className="leading-relaxed">B-2/390, Sitapur Rd, Sector-A, Secheme,<br /> Aliganj, Lucknow, Uttar Pradesh 226024</span>
               </li>
             </ul>
 
             <div className="bg-[#1C3A5A] p-3 rounded-lg">
               <div className="flex items-center gap-2 text-blue-400 mb-1">
                 <Clock className="w-4 h-4" />
-                <span className="text-white text-sm font-medium">Mon - Sat: 09:00 AM - 5:00 PM</span>
+                <span className="text-white text-sm font-medium">Mon - Sat: 09:00 AM - 6:00 PM</span>
               </div>
               <p className="text-red-400 text-sm font-medium ml-6">Sunday: Closed</p>
             </div>
