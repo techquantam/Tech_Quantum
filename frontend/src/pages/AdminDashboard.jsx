@@ -192,7 +192,21 @@ const AdminDashboard = () => {
       setInternHeroFile(null);
       fetchData();
     } catch (err) {
-      alert('Failed to upload video');
+      alert('Failed to upload media');
+    }
+  };
+
+  const deleteInternHero = async () => {
+    if (!window.confirm('Are you sure you want to delete the hero media?')) return;
+    try {
+      await fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/hero`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      setInternHero({ videoUrl: '' });
+      fetchData();
+    } catch (err) {
+      alert('Failed to delete media');
     }
   };
 
@@ -429,18 +443,28 @@ const AdminDashboard = () => {
         {/* INTERNSHIP HERO */}
         {activeTab === 'intern_hero' && (
           <div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-8">Internship Hero Video</h1>
+            <h1 className="text-3xl font-bold text-slate-800 mb-8">Internship Hero Media</h1>
             <div className="bg-white p-6 rounded-2xl shadow-sm mb-8">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">Update Background Video</h2>
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">Update Background Media</h2>
               <form onSubmit={updateInternHero} className="flex flex-col sm:flex-row gap-4">
-                <input type="file" accept="video/mp4,video/webm" required onChange={e => setInternHeroFile(e.target.files[0])} className="border p-2 rounded-lg flex-1 bg-slate-50"/>
-                <button type="submit" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700">Upload Video</button>
+                <input type="file" accept="image/*,video/mp4,video/webm" required onChange={e => setInternHeroFile(e.target.files[0])} className="border p-2 rounded-lg flex-1 bg-slate-50"/>
+                <button type="submit" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700">Upload Media</button>
               </form>
             </div>
             {internHero?.videoUrl && (
-              <div className="bg-slate-900 rounded-2xl overflow-hidden aspect-video max-w-2xl relative shadow-lg">
-                <video src={internHero.videoUrl} autoPlay loop muted className="w-full h-full object-cover opacity-50" />
-                <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-2xl drop-shadow-md">Current Background Video</div>
+              <div className="relative group bg-slate-900 rounded-2xl overflow-hidden aspect-video max-w-2xl shadow-lg">
+                {internHero.videoUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+                  <video src={internHero.videoUrl} autoPlay loop muted playsInline className="w-full h-full object-cover opacity-50" />
+                ) : (
+                  <img src={internHero.videoUrl} alt="Hero Background" className="w-full h-full object-cover opacity-50" />
+                )}
+                <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-2xl drop-shadow-md pointer-events-none">Current Background Media</div>
+                <button 
+                  onClick={deleteInternHero}
+                  className="absolute inset-0 bg-red-600/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity font-bold z-10"
+                >
+                  <Trash2 className="w-8 h-8 mb-2" /><br/>Delete Media
+                </button>
               </div>
             )}
           </div>

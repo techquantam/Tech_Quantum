@@ -388,6 +388,10 @@ app.post('/api/internship/hero', verifyAdmin, async (req, res) => {
   await hero.save();
   res.json({ success: true });
 });
+app.delete('/api/internship/hero', verifyAdmin, async (req, res) => {
+  await models.InternHero.deleteMany({});
+  res.json({ success: true });
+});
 
 // --- INTERNSHIP TESTIMONIALS API ---
 app.get('/api/internship/testimonials', async (req, res) => {

@@ -89,10 +89,14 @@ const Internship = () => {
 
       {/* 1. HERO SECTION */}
       <section className="relative min-h-[90vh] flex items-center justify-center pt-24 pb-20 overflow-hidden text-white">
-        {/* Background Video */}
+        {/* Background Media */}
         {heroVideo ? (
           <div className="absolute inset-0 z-0">
-            <video src={heroVideo} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+            {heroVideo.match(/\.(mp4|webm|ogg)$/i) ? (
+              <video src={heroVideo} autoPlay loop muted playsInline className="w-full h-full object-cover" />
+            ) : (
+              <img src={heroVideo} alt="Hero Background" className="w-full h-full object-cover" />
+            )}
           </div>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A5F] via-[#112A46] to-[#0A2540] z-0">
