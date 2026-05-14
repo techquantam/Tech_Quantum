@@ -376,6 +376,10 @@ app.delete('/api/projects/:id', verifyAdmin, async (req, res) => {
   await models.Project.findByIdAndDelete(req.params.id);
   res.json({ success: true });
 });
+app.put('/api/projects/:id', verifyAdmin, async (req, res) => {
+  const updatedProject = await models.Project.findByIdAndUpdate(req.params.id, req.body, { new: true });
+  res.json(toFrontEnd(updatedProject));
+});
 
 // --- INTERNSHIP HERO API ---
 app.get('/api/internship/hero', async (req, res) => {

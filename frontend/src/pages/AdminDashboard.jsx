@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Trash2, Plus, Image, BookOpen, Briefcase } from 'lucide-react';
+import { LogOut, Trash2, Plus, Image, BookOpen, Briefcase, Pencil } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('blogs');
@@ -16,6 +16,7 @@ const AdminDashboard = () => {
   const [carouselImageFile, setCarouselImageFile] = useState(null);
   const [projectForm, setProjectForm] = useState({ title: '', description: '', image: '', category: 'IT' });
   const [projectImageFile, setProjectImageFile] = useState(null);
+  const [editingProjectId, setEditingProjectId] = useState(null);
 
   // Internship States
   const [internHero, setInternHero] = useState({ videoUrl: '' });
@@ -159,7 +160,7 @@ const AdminDashboard = () => {
     fetchData();
   };
 
-  const addProject = async (e) => {
+  const saveProject = async (e) => {
     e.preventDefault();
     let finalImageUrl = projectForm.image;
     if (projectImageFile) {
@@ -170,14 +171,43 @@ const AdminDashboard = () => {
         return;
       }
     }
-    await fetch(`${import.meta.env.VITE_API_URL || ""}/api/projects`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ ...projectForm, image: finalImageUrl })
-    });
+    
+    if (editingProjectId) {
+      await fetch(`${import.meta.env.VITE_API_URL || ""}/api/projects/${editingProjectId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ ...projectForm, image: finalImageUrl })
+      });
+    } else {
+      await fetch(`${import.meta.env.VITE_API_URL || ""}/api/projects`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ ...projectForm, image: finalImageUrl })
+      });
+    }
+    
     setProjectForm({ title: '', description: '', image: '', category: 'IT' });
     setProjectImageFile(null);
+    setEditingProjectId(null);
     fetchData();
+  };
+
+  const handleEditProject = (project) => {
+    setProjectForm({
+      title: project.title,
+      description: project.description,
+      image: project.image || '',
+      category: project.category
+    });
+    setEditingProjectId(project.id);
+    setProjectImageFile(null);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  
+  const cancelEditProject = () => {
+    setProjectForm({ title: '', description: '', image: '', category: 'IT' });
+    setProjectImageFile(null);
+    setEditingProjectId(null);
   };
   const updateInternHero = async (e) => {
     e.preventDefault();
@@ -409,8 +439,11 @@ const AdminDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-slate-800 mb-8">Manage Projects & Clients</h1>
             <div className="bg-white p-6 rounded-2xl shadow-sm mb-8">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><Plus className="w-5 h-5"/> Add New Project</h2>
-              <form onSubmit={addProject} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                {editingProjectId ? <Pencil className="w-5 h-5"/> : <Plus className="w-5 h-5"/>} 
+                {editingProjectId ? 'Edit Project' : 'Add New Project'}
+              </h2>
+              <form onSubmit={saveProject} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input required placeholder="Project Title" value={projectForm.title} onChange={e => setProjectForm({...projectForm, title: e.target.value})} className="border p-3 rounded-lg"/>
                 <select value={projectForm.category} onChange={e => setProjectForm({...projectForm, category: e.target.value})} className="border p-3 rounded-lg bg-white">
                   <option value="IT">IT Section</option>
@@ -418,7 +451,16 @@ const AdminDashboard = () => {
                 </select>
                 <textarea required placeholder="Description (What did you do?)" value={projectForm.description} onChange={e => setProjectForm({...projectForm, description: e.target.value})} className="border p-3 rounded-lg md:col-span-2" rows="3"/>
                 <input type="file" accept="image/*" onChange={e => setProjectImageFile(e.target.files[0])} className="border p-2 rounded-lg bg-slate-50 md:col-span-2"/>
-                <button type="submit" className="md:col-span-2 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700">Add Project</button>
+                <div className="md:col-span-2 flex gap-4">
+                  <button type="submit" className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700">
+                    {editingProjectId ? 'Update Project' : 'Add Project'}
+                  </button>
+                  {editingProjectId && (
+                    <button type="button" onClick={cancelEditProject} className="flex-1 bg-slate-200 text-slate-800 py-3 rounded-lg font-bold hover:bg-slate-300">
+                      Cancel
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
             
@@ -433,7 +475,10 @@ const AdminDashboard = () => {
                     </div>
                     <p className="text-sm text-slate-500 line-clamp-2">{project.description}</p>
                   </div>
-                  <button onClick={() => deleteItem('projects', project.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg shrink-0"><Trash2 className="w-5 h-5"/></button>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button onClick={() => handleEditProject(project)} className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg"><Pencil className="w-5 h-5"/></button>
+                    <button onClick={() => deleteItem('projects', project.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5"/></button>
+                  </div>
                 </div>
               ))}
             </div>
