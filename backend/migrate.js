@@ -53,6 +53,24 @@ const migrate = async () => {
       console.log(`Migrated internship hero.`);
     }
 
+    const homeHero = readJSON('home_hero.json');
+    if (homeHero && homeHero.heading) {
+      await models.HomeHero.deleteMany({});
+      await models.HomeHero.create(homeHero);
+      console.log(`Migrated homepage hero announcement.`);
+    } else {
+      await models.HomeHero.deleteMany({});
+      await models.HomeHero.create({
+        heading: "Summer Internship Program 2026",
+        subtitle: "Build Real Projects With Industry Experts",
+        imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
+        redirectUrl: "/internship",
+        isAnnouncementActive: true,
+        tickerText: "🔥 Summer Internship Registrations Open Now"
+      });
+      console.log(`Created default homepage hero announcement.`);
+    }
+
     const tests = readJSON('internship_testimonials.json');
     if (tests.length) {
       await models.InternTestimonial.deleteMany({});

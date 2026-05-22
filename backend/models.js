@@ -34,6 +34,16 @@ const internHeroSchema = new mongoose.Schema({
 });
 const InternHero = mongoose.model('InternHero', internHeroSchema);
 
+const homeHeroSchema = new mongoose.Schema({
+  heading: String,
+  subtitle: String,
+  imageUrl: String,
+  redirectUrl: String,
+  isAnnouncementActive: Boolean,
+  tickerText: String
+});
+const HomeHero = mongoose.model('HomeHero', homeHeroSchema);
+
 const internTestimonialSchema = new mongoose.Schema({
   name: String,
   rating: String,
@@ -63,6 +73,7 @@ module.exports = {
   Project,
   Carousel,
   InternHero,
+  HomeHero,
   InternTestimonial,
   InternFaq,
   InternCollege,

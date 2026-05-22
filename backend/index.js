@@ -397,6 +397,48 @@ app.delete('/api/internship/hero', verifyAdmin, async (req, res) => {
   res.json({ success: true });
 });
 
+// --- HOME HERO API ---
+app.get('/api/home-hero', async (req, res) => {
+  try {
+    let hero = await models.HomeHero.findOne();
+    if (!hero) {
+      hero = {
+        heading: "Summer Internship Program 2026",
+        subtitle: "Build Real Projects With Industry Experts",
+        imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
+        redirectUrl: "/internship",
+        isAnnouncementActive: true,
+        tickerText: "🔥 Summer Internship Registrations Open Now"
+      };
+    } else {
+      hero = toFrontEnd(hero);
+    }
+    res.json(hero);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch homepage hero configuration" });
+  }
+});
+
+app.post('/api/home-hero', verifyAdmin, async (req, res) => {
+  try {
+    await models.HomeHero.deleteMany({});
+    const hero = new models.HomeHero(req.body);
+    await hero.save();
+    res.json({ success: true, hero: toFrontEnd(hero) });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to save homepage hero configuration" });
+  }
+});
+
+app.delete('/api/home-hero', verifyAdmin, async (req, res) => {
+  try {
+    await models.HomeHero.deleteMany({});
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to reset homepage hero configuration" });
+  }
+});
+
 // --- INTERNSHIP TESTIMONIALS API ---
 app.get('/api/internship/testimonials', async (req, res) => {
   const tests = await models.InternTestimonial.find();

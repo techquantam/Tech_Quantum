@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Trash2, Plus, Image, BookOpen, Briefcase, Pencil } from 'lucide-react';
+import { LogOut, Trash2, Plus, Image, BookOpen, Briefcase, Pencil, ArrowRight } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('blogs');
@@ -34,6 +34,17 @@ const AdminDashboard = () => {
   const [internGallery, setInternGallery] = useState([]);
   const [internGalleryFile, setInternGalleryFile] = useState(null);
 
+  // Homepage Hero Announcement States
+  const [homeHeroForm, setHomeHeroForm] = useState({
+    heading: '',
+    subtitle: '',
+    imageUrl: '',
+    redirectUrl: '',
+    isAnnouncementActive: false,
+    tickerText: ''
+  });
+  const [homeHeroImageFile, setHomeHeroImageFile] = useState(null);
+
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
 
@@ -47,7 +58,7 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [bRes, cRes, imgRes, pRes, iHeroRes, iTestiRes, iFaqRes, iColRes, iGalRes] = await Promise.all([
+      const [bRes, cRes, imgRes, pRes, iHeroRes, iTestiRes, iFaqRes, iColRes, iGalRes, hHeroRes] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/blogs`),
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/careers`),
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/carousel`),
@@ -56,7 +67,8 @@ const AdminDashboard = () => {
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/testimonials`),
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/faqs`),
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/colleges`),
-        fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/gallery`)
+        fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/gallery`),
+        fetch(`${import.meta.env.VITE_API_URL || ""}/api/home-hero`)
       ]);
       setBlogs(await bRes.json());
       setCareers(await cRes.json());
@@ -67,6 +79,16 @@ const AdminDashboard = () => {
       setInternFaqs(await iFaqRes.json());
       setInternColleges(await iColRes.json());
       setInternGallery(await iGalRes.json());
+      
+      const heroData = await hHeroRes.json();
+      setHomeHeroForm({
+        heading: heroData.heading || '',
+        subtitle: heroData.subtitle || '',
+        imageUrl: heroData.imageUrl || '',
+        redirectUrl: heroData.redirectUrl || '',
+        isAnnouncementActive: !!heroData.isAnnouncementActive,
+        tickerText: heroData.tickerText || ''
+      });
     } catch (error) {
       console.error('Failed to fetch data', error);
     }
@@ -296,6 +318,51 @@ const AdminDashboard = () => {
     }
   };
 
+  const saveHomeHero = async (e) => {
+    e.preventDefault();
+    let finalImageUrl = homeHeroForm.imageUrl;
+    if (homeHeroImageFile) {
+      try {
+        finalImageUrl = await handleFileUpload(homeHeroImageFile);
+      } catch (err) {
+        alert('Failed to upload banner image');
+        return;
+      }
+    }
+    
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/home-hero`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Authorization': `Bearer ${token}` 
+      },
+      body: JSON.stringify({ ...homeHeroForm, imageUrl: finalImageUrl })
+    });
+    
+    if (res.ok) {
+      alert('Hero Announcement configuration saved successfully!');
+      setHomeHeroImageFile(null);
+      fetchData();
+    } else {
+      alert('Failed to save Hero configuration');
+    }
+  };
+
+  const resetHomeHero = async () => {
+    if (!window.confirm('Are you sure you want to reset the hero announcement to system defaults?')) return;
+    const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/home-hero`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (res.ok) {
+      alert('Hero Announcement reset to defaults.');
+      setHomeHeroImageFile(null);
+      fetchData();
+    } else {
+      alert('Failed to reset Hero configuration');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 flex">
       {/* Sidebar */}
@@ -313,6 +380,9 @@ const AdminDashboard = () => {
           </button>
           <button onClick={() => setActiveTab('projects')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'projects' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
             <Briefcase className="w-5 h-5" /> Projects
+          </button>
+          <button onClick={() => setActiveTab('home_hero')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'home_hero' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
+            <Image className="w-5 h-5" /> Hero Announcement
           </button>
           
           <div className="pt-4 pb-2 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Internship Page</div>
@@ -622,6 +692,237 @@ const AdminDashboard = () => {
                   </button>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* HOMEPAGE HERO ANNOUNCEMENT */}
+        {activeTab === 'home_hero' && (
+          <div className="max-w-5xl">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+              <div>
+                <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">Homepage Hero Announcement</h1>
+                <p className="text-slate-500 font-medium mt-1">Configure the latest internship announcement drive and control live landing page hero elements.</p>
+              </div>
+              <button 
+                type="button" 
+                onClick={resetHomeHero}
+                className="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-2.5 rounded-xl font-bold transition-all shadow-sm flex items-center gap-2"
+              >
+                Reset to Defaults
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Form Config Fields */}
+              <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-100 lg:col-span-7 space-y-6">
+                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-2 pb-3 border-b border-slate-100">
+                  <Plus className="w-5 h-5 text-blue-500" /> Configuration
+                </h2>
+                
+                <form onSubmit={saveHomeHero} className="space-y-6">
+                  {/* Announcement Toggle */}
+                  <div className="flex items-center justify-between p-4 bg-orange-50/50 border border-orange-100 rounded-2xl">
+                    <div>
+                      <label className="font-extrabold text-slate-800 text-sm block">Active Announcement Mode</label>
+                      <span className="text-xs text-slate-500 font-medium">Toggle between the live internship banner drive and default tagline.</span>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={homeHeroForm.isAnnouncementActive} 
+                        onChange={e => setHomeHeroForm({...homeHeroForm, isAnnouncementActive: e.target.checked})} 
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F05A28]"></div>
+                    </label>
+                  </div>
+
+                  {homeHeroForm.isAnnouncementActive && (
+                    <>
+                      {/* Ticker Text */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-extrabold text-slate-700 block">Top Marquee Ticker Text</label>
+                        <input 
+                          type="text" 
+                          required={homeHeroForm.isAnnouncementActive}
+                          placeholder="e.g. 🔥 Summer Internship Registrations Open Now" 
+                          value={homeHeroForm.tickerText} 
+                          onChange={e => setHomeHeroForm({...homeHeroForm, tickerText: e.target.value})} 
+                          className="w-full border border-slate-200 p-3.5 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none font-medium transition-all"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Heading */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-extrabold text-slate-700 block">Hero Title Heading</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. Summer Internship Program 2026" 
+                      value={homeHeroForm.heading} 
+                      onChange={e => setHomeHeroForm({...homeHeroForm, heading: e.target.value})} 
+                      className="w-full border border-slate-200 p-3.5 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none font-medium transition-all"
+                    />
+                  </div>
+
+                  {/* Subtitle / Description */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-extrabold text-slate-700 block">Subtitle / Description</label>
+                    <textarea 
+                      required
+                      placeholder="e.g. Build Real Projects With Industry Experts" 
+                      value={homeHeroForm.subtitle} 
+                      onChange={e => setHomeHeroForm({...homeHeroForm, subtitle: e.target.value})} 
+                      className="w-full border border-slate-200 p-3.5 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none font-medium transition-all"
+                      rows="3"
+                    />
+                  </div>
+
+                  {homeHeroForm.isAnnouncementActive && (
+                    <>
+                      {/* Redirect Link */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-extrabold text-slate-700 block">Redirect URL</label>
+                        <input 
+                          type="text" 
+                          required={homeHeroForm.isAnnouncementActive}
+                          placeholder="e.g. /internship or external registration link" 
+                          value={homeHeroForm.redirectUrl} 
+                          onChange={e => setHomeHeroForm({...homeHeroForm, redirectUrl: e.target.value})} 
+                          className="w-full border border-slate-200 p-3.5 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none font-medium transition-all"
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Banner Image upload */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-extrabold text-slate-700 block">Banner Image File</label>
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={e => setHomeHeroImageFile(e.target.files[0])} 
+                        className="w-full border border-slate-200 p-2.5 rounded-xl bg-slate-50 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-extrabold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+                      />
+                      {homeHeroForm.imageUrl && !homeHeroImageFile && (
+                        <div className="h-14 w-20 shrink-0 rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                          <img src={homeHeroForm.imageUrl} className="w-full h-full object-cover" alt="Current" />
+                        </div>
+                      )}
+                    </div>
+                    {homeHeroForm.imageUrl && (
+                      <span className="text-[11px] text-slate-400 font-medium block overflow-hidden text-ellipsis whitespace-nowrap">Current URL: {homeHeroForm.imageUrl}</span>
+                    )}
+                  </div>
+
+                  <button 
+                    type="submit" 
+                    className="w-full bg-[#F05A28] hover:bg-[#d94a1b] text-white py-4 rounded-xl font-bold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all flex items-center justify-center gap-2"
+                  >
+                    Save Configuration
+                  </button>
+                </form>
+              </div>
+
+              {/* Preview Side */}
+              <div className="lg:col-span-5 space-y-6">
+                <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 pb-3 border-b border-slate-100">
+                  <Image className="w-5 h-5 text-orange-500" /> Live Mock Preview
+                </h2>
+                
+                {/* Live Preview Container resembling Home.jsx styles */}
+                <div className="bg-[#FFF9F5] border border-orange-200/40 rounded-3xl p-6 shadow-md relative overflow-hidden flex flex-col justify-between min-h-[380px]">
+                  {/* Subtle decorative blob */}
+                  <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-orange-100/60 rounded-full blur-[40px] pointer-events-none -z-10"></div>
+                  
+                  <div className="space-y-4">
+                    {/* Pulsing live badge mimic */}
+                    {homeHeroForm.isAnnouncementActive ? (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-600 font-extrabold text-[10px] tracking-wider uppercase border border-orange-200/50">
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
+                        </span>
+                        🔴 LIVE REGISTRATION OPEN
+                      </div>
+                    ) : (
+                      <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-600 font-bold text-[10px] tracking-wider uppercase border border-orange-200/50">
+                        🚀 SERVICES • EDUCATION • INTERNSHIPS
+                      </div>
+                    )}
+
+                    {/* Heading preview */}
+                    <h3 className="text-xl md:text-2xl font-black text-[#0A2540] tracking-tight leading-tight">
+                      {homeHeroForm.isAnnouncementActive ? (
+                        <>
+                          {homeHeroForm.heading ? (
+                            <>
+                              {homeHeroForm.heading.split(' ').slice(0, -1).join(' ')}{' '}
+                              <span className="text-[#F05A28]">
+                                {homeHeroForm.heading.split(' ').pop()}
+                              </span>
+                            </>
+                          ) : (
+                            "Summer Internship Program 2026"
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          Build. Learn. Grow with <span className="text-[#F05A28]">Technology & AI</span>
+                        </>
+                      )}
+                    </h3>
+
+                    {/* Subtitle preview */}
+                    <p className="text-xs text-slate-500 font-semibold leading-relaxed">
+                      {homeHeroForm.isAnnouncementActive 
+                        ? (homeHeroForm.subtitle || "Build Real Projects With Industry Experts")
+                        : "We deliver IT solutions, practical education, and industry-ready internships — all in one place."}
+                    </p>
+                  </div>
+
+                  {/* Banner mockup preview */}
+                  <div className="mt-6 relative w-full aspect-[2/1] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 flex items-center justify-center group shadow-sm">
+                    {homeHeroImageFile ? (
+                      <img 
+                        src={URL.createObjectURL(homeHeroImageFile)} 
+                        className="w-full h-full object-cover" 
+                        alt="Local upload preview" 
+                      />
+                    ) : homeHeroForm.imageUrl ? (
+                      <img 
+                        src={homeHeroForm.imageUrl} 
+                        className="w-full h-full object-cover" 
+                        alt="Remote upload preview" 
+                      />
+                    ) : (
+                      <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5"><Image className="w-4 h-4"/> No Banner Image Selected</span>
+                    )}
+
+                    {homeHeroForm.isAnnouncementActive && (
+                      <div className="absolute bottom-2 left-2 right-2 py-2 px-3 bg-white/90 backdrop-blur-sm rounded-xl border border-white/40 flex items-center justify-between shadow-md">
+                        <div>
+                          <span className="text-[7px] uppercase tracking-wider font-extrabold text-[#F05A28] block">Announcement</span>
+                          <span className="text-[10px] font-black text-[#0A2540] truncate max-w-[150px] block">{homeHeroForm.heading || "Summer Internship"}</span>
+                        </div>
+                        <div className="h-5 w-5 rounded-full bg-[#F05A28] flex items-center justify-center text-white">
+                          <ArrowRight className="w-3 h-3" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {homeHeroForm.isAnnouncementActive && homeHeroForm.tickerText && (
+                    <div className="mt-4 p-2 bg-gradient-to-r from-[#F05A28] to-[#F97316] text-white rounded-lg text-[9px] font-bold tracking-wider text-center uppercase overflow-hidden whitespace-nowrap text-ellipsis">
+                      Marquee: {homeHeroForm.tickerText}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         )}
