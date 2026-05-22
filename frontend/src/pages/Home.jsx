@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import RotatingCarousel from '../components/RotatingCarousel';
 import HeroSkeleton from '../components/HeroSkeleton';
 import { Monitor, BookOpen, Briefcase, ArrowRight, Rocket, CheckCircle2, Star, Sparkles } from 'lucide-react';
 
@@ -110,21 +109,21 @@ const Home = () => {
               >
                 {/* Live Pulse Indicator Badge */}
                 {heroData?.isAnnouncementActive ? (
-                  <motion.div 
+                  <motion.div
                     animate={{ scale: [1, 1.03, 1] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="inline-flex items-center gap-2.5 px-4.5 py-2 rounded-full bg-orange-100 text-orange-600 font-extrabold text-xs mb-8 shadow-sm tracking-wider uppercase border border-orange-200/50"
+                    className="inline-flex items-center gap-3 px-6 py-2.5 rounded-full bg-yellow-100/90 text-amber-800 font-extrabold text-xs mb-8 shadow-sm tracking-wider uppercase border border-yellow-300/80 backdrop-blur-sm"
                   >
-                    <span className="flex h-2 w-2 relative">
+                    <span className="relative flex h-3 w-3 shrink-0">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
                     </span>
-                    🔴 LIVE REGISTRATION OPEN
+                    <span className="leading-none mt-[1px]">LIVE REGISTRATION OPEN</span>
                   </motion.div>
                 ) : (
-                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-100 text-orange-600 font-bold text-xs mb-8 shadow-sm uppercase border border-orange-200/50 tracking-wider">
-                    <Rocket className="w-3.5 h-3.5 animate-bounce" />
-                    🌐 IT Services • 🎓 Education • 💼 Internship
+                  <div className="inline-flex items-center gap-2.5 px-4.5 py-2.5 rounded-full bg-yellow-100/90 text-amber-800 font-bold text-xs mb-8 shadow-sm uppercase border border-yellow-300/80 tracking-wider backdrop-blur-sm">
+                    <Rocket className="w-3.5 h-3.5 animate-bounce text-amber-600" />
+                    <span className="leading-none mt-[1px]">🌐 IT Services • 🎓 Education • 💼 Internship</span>
                   </div>
                 )}
 
@@ -149,8 +148,8 @@ const Home = () => {
 
                 {/* Subtitle / Description */}
                 <p className="text-lg md:text-xl text-slate-600 mb-10 leading-relaxed font-semibold">
-                  {heroData?.isAnnouncementActive 
-                    ? heroData.subtitle 
+                  {heroData?.isAnnouncementActive
+                    ? heroData.subtitle
                     : "We deliver IT solutions, practical education, and industry-ready internships — all in one place."}
                 </p>
 
@@ -170,7 +169,7 @@ const Home = () => {
                 {/* Dual Call-To-Action (CTA) Buttons */}
                 <div className="flex flex-col sm:flex-row gap-4">
                   {heroData?.isAnnouncementActive ? (
-                    <a 
+                    <a
                       href={heroData.redirectUrl || "/internship"}
                       target={heroData.redirectUrl?.startsWith("http") ? "_blank" : "_self"}
                       rel="noopener noreferrer"
@@ -200,28 +199,98 @@ const Home = () => {
                     onClick={() => document.getElementById('services').scrollIntoView({ behavior: 'smooth' })}
                     className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-orange-50 text-[#F05A28] border-2 border-orange-500/20 hover:border-[#F05A28] rounded-xl font-bold transition-all flex items-center justify-center shadow-sm"
                   >
-                    Explore Programs
+                    Explore Our Services
                   </button>
                 </div>
               </motion.div>
 
-              {/* Right Column: Premium Glowing 3D Tilt Card */}
+              {/* Right Column: Premium Tilted & Glowing Announcement Flyer */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 1, delay: 0.2 }}
                 className="relative w-full flex justify-center lg:justify-end items-center overflow-visible lg:pr-12"
               >
+                {/* Floating Emojis with highly animated properties */}
+                {heroData?.isAnnouncementActive && (
+                  <>
+                    {/* Megaphone (📢) floating top-left */}
+                    <motion.div
+                      className="absolute -top-6 -left-6 sm:-left-2 text-4xl select-none z-30 pointer-events-none drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]"
+                      animate={{
+                        y: [-12, 12, -12],
+                        rotate: [-18, 12, -18],
+                        scale: [1, 1.12, 1]
+                      }}
+                      transition={{ duration: 4.2, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      📢
+                    </motion.div>
+
+                    {/* Bell (🔔) floating top-right */}
+                    <motion.div
+                      className="absolute -top-8 -right-4 text-3.5xl select-none z-30 pointer-events-none drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]"
+                      animate={{
+                        y: [10, -10, 10],
+                        rotate: [20, -15, 20],
+                        scale: [0.96, 1.08, 0.96]
+                      }}
+                      transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      🔔
+                    </motion.div>
+
+                    {/* Sparkles (✨) floating right side */}
+                    <motion.div
+                      className="absolute top-1/3 -right-8 text-3xl select-none z-30 pointer-events-none drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]"
+                      animate={{
+                        scale: [0.85, 1.3, 0.85],
+                        opacity: [0.6, 1, 0.6]
+                      }}
+                      transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      ✨
+                    </motion.div>
+
+                    {/* Party Popper (🎉) floating bottom-left */}
+                    <motion.div
+                      className="absolute -bottom-6 -left-6 text-4xl select-none z-30 pointer-events-none drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]"
+                      animate={{
+                        y: [10, -10, 10],
+                        rotate: [-15, 15, -15],
+                        scale: [0.95, 1.05, 0.95]
+                      }}
+                      transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      🎉
+                    </motion.div>
+
+                    {/* Fire (🔥) floating top-left edge */}
+                    <motion.div
+                      className="absolute top-1/2 -left-8 text-3.5xl select-none z-30 pointer-events-none drop-shadow-[0_4px_6px_rgba(0,0,0,0.15)]"
+                      animate={{
+                        scale: [0.9, 1.15, 0.9],
+                        y: [-6, 6, -6]
+                      }}
+                      transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                      🔥
+                    </motion.div>
+                  </>
+                )}
+
+                {/* Polaroid/Memo Framed Flyer Card */}
                 <motion.div
-                  animate={{ y: [-8, 8, -8] }}
-                  transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                  animate={{ y: [-6, 6, -6], rotate: -3.2 }}
+                  transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                   whileHover={{
-                    scale: 1.04,
-                    rotateY: 8,
-                    rotateX: -4,
-                    z: 40,
+                    scale: 1.05,
+                    rotate: 0,
+                    rotateY: 6,
+                    rotateX: -3,
+                    z: 50,
                   }}
-                  className="relative w-full max-w-[420px] aspect-[4/3] sm:aspect-[1.3] bg-white/40 border border-white/40 backdrop-blur-xl rounded-[2.5rem] p-4 shadow-2xl hover:shadow-[0_25px_60px_rgba(240,90,40,0.22)] transition-all duration-300 group cursor-pointer overflow-hidden flex items-center justify-center"
+                  className="relative w-full max-w-[430px] bg-white border border-slate-100 rounded-[2.2rem] p-3.5 shadow-2xl hover:shadow-[0_30px_70px_rgba(240,90,40,0.2)] transition-all duration-300 group cursor-pointer overflow-visible flex flex-col"
                   style={{ perspective: 1000, transformStyle: "preserve-3d" }}
                   onClick={() => {
                     const url = heroData?.redirectUrl || "/internship";
@@ -232,27 +301,45 @@ const Home = () => {
                     }
                   }}
                 >
-                  {/* Outer glowing dynamic neon orange highlight border */}
-                  <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/20 via-transparent to-amber-500/20 rounded-[2.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20"></div>
+                  {/* Outer glowing dynamic neon border on hover */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/15 via-transparent to-amber-500/15 rounded-[2.2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-20"></div>
 
-                  <div className="w-full h-full relative overflow-hidden rounded-[1.8rem] shadow-inner bg-slate-100 flex items-center justify-center">
-                    <img 
-                      src={heroData?.imageUrl || "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80"} 
-                      alt="Internship Banner announcement" 
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700" 
+                  {/* Pinned Washi tape on top center */}
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 w-32 h-7 bg-amber-100/75 backdrop-blur-[1.5px] border border-amber-200/40 shadow-[0_2px_4px_rgba(0,0,0,0.03)] rounded-sm rotate-[-1.5deg] z-30 flex items-center justify-center pointer-events-none select-none">
+                    <span className="w-10 h-[1px] bg-slate-300/30"></span>
+                  </div>
+
+                  {/* Inner Banner wrapper */}
+                  <div className="w-full relative overflow-hidden rounded-[1.6rem] bg-slate-50 flex items-center justify-center aspect-[1.45] shadow-inner z-10">
+                    {/* High-quality vibrant duplicate blur layer to seamlessly fill edge bars */}
+                    <img
+                      src={heroData?.imageUrl || "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80"}
+                      alt="Flyer Glow Backdrop"
+                      className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-50 scale-125 select-none pointer-events-none z-0"
                     />
-                    
-                    {/* Dynamic Dynamic Banner Text Badge Overlay */}
-                    <div className="absolute bottom-4 left-4 right-4 py-3.5 px-5 bg-white/85 backdrop-blur-md rounded-2xl border border-white/40 flex items-center justify-between shadow-xl translate-y-2 group-hover:translate-y-0 transition-transform duration-300 z-10">
-                      <div>
-                        <span className="text-[10px] uppercase tracking-widest font-black text-[#F05A28] block mb-0.5">Special Announcement</span>
-                        <span className="text-sm font-black text-[#0A2540]">{heroData?.heading || "Summer Internship 2026"}</span>
-                      </div>
-                      <div className="h-9 w-9 rounded-full bg-[#F05A28] flex items-center justify-center text-white shadow-md group-hover:scale-110 group-hover:bg-[#d94a1b] transition-all">
-                        <ArrowRight className="w-5 h-5" />
-                      </div>
+
+                    {/* Pinned horizontal flyer - uncropped, sharp, border-separated */}
+                    <img
+                      src={heroData?.imageUrl || "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80"}
+                      alt="Internship Banner announcement"
+                      loading="lazy"
+                      className="relative z-10 max-w-full max-h-full object-contain p-1 rounded-xl shadow-sm border border-white/20 bg-white/5 group-hover:scale-[1.03] transition-transform duration-500"
+                    />
+                  </div>
+
+                  {/* Clean announcement details block below the image inside the card */}
+                  <div className="pt-4 pb-1 px-2.5 flex items-center justify-between z-20">
+                    <div className="max-w-[80%]">
+                      <span className="text-[10px] uppercase tracking-wider font-extrabold text-[#F05A28] block mb-0.5">Special Announcement</span>
+                      <span className="text-sm font-black text-[#0A2540] truncate block">{heroData?.heading || "Summer Internship Program 2026"}</span>
+                      <span className="text-[11px] text-slate-500 font-semibold truncate block mt-0.5">{heroData?.subtitle}</span>
                     </div>
+                    <motion.div
+                      whileHover={{ scale: 1.1, backgroundColor: '#d94a1b' }}
+                      className="h-9 w-9 rounded-full bg-[#F05A28] flex items-center justify-center text-white shadow-md shrink-0 transition-colors ml-3"
+                    >
+                      <ArrowRight className="w-5 h-5" />
+                    </motion.div>
                   </div>
                 </motion.div>
               </motion.div>

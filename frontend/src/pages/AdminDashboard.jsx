@@ -1,19 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Trash2, Plus, Image, BookOpen, Briefcase, Pencil, ArrowRight } from 'lucide-react';
+import { LogOut, Trash2, Plus, Image, BookOpen, Briefcase, Pencil, ArrowRight, Rocket } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('blogs');
   const [blogs, setBlogs] = useState([]);
   const [careers, setCareers] = useState([]);
-  const [carousel, setCarousel] = useState([]);
   const [projects, setProjects] = useState([]);
   
   // Form States
   const [blogForm, setBlogForm] = useState({ title: '', date: '', category: '', image: '', content: '' });
   const [blogImageFile, setBlogImageFile] = useState(null);
   const [careerForm, setCareerForm] = useState({ title: '', type: '', location: '' });
-  const [carouselImageFile, setCarouselImageFile] = useState(null);
   const [projectForm, setProjectForm] = useState({ title: '', description: '', image: '', category: 'IT' });
   const [projectImageFile, setProjectImageFile] = useState(null);
   const [editingProjectId, setEditingProjectId] = useState(null);
@@ -58,10 +56,9 @@ const AdminDashboard = () => {
 
   const fetchData = async () => {
     try {
-      const [bRes, cRes, imgRes, pRes, iHeroRes, iTestiRes, iFaqRes, iColRes, iGalRes, hHeroRes] = await Promise.all([
+      const [bRes, cRes, pRes, iHeroRes, iTestiRes, iFaqRes, iColRes, iGalRes, hHeroRes] = await Promise.all([
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/blogs`),
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/careers`),
-        fetch(`${import.meta.env.VITE_API_URL || ""}/api/carousel`),
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/projects`),
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/hero`),
         fetch(`${import.meta.env.VITE_API_URL || ""}/api/internship/testimonials`),
@@ -72,7 +69,6 @@ const AdminDashboard = () => {
       ]);
       setBlogs(await bRes.json());
       setCareers(await cRes.json());
-      setCarousel(await imgRes.json());
       setProjects(await pRes.json());
       setInternHero(await iHeroRes.json());
       setInternTestimonials(await iTestiRes.json());
@@ -150,35 +146,6 @@ const AdminDashboard = () => {
       body: JSON.stringify(careerForm)
     });
     setCareerForm({ title: '', type: '', location: '' });
-    fetchData();
-  };
-
-  const addCarouselImage = async (e) => {
-    e.preventDefault();
-    if (!carouselImageFile) return;
-    try {
-      const uploadedUrl = await handleFileUpload(carouselImageFile);
-      const newImages = [...carousel, uploadedUrl];
-      await fetch(`${import.meta.env.VITE_API_URL || ""}/api/carousel`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ images: newImages })
-      });
-      setCarouselImageFile(null);
-      fetchData();
-    } catch (err) {
-      alert('Failed to upload carousel image');
-    }
-  };
-
-  const removeCarouselImage = async (index) => {
-    if (!window.confirm('Remove image?')) return;
-    const newImages = carousel.filter((_, i) => i !== index);
-    await fetch(`${import.meta.env.VITE_API_URL || ""}/api/carousel`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ images: newImages })
-    });
     fetchData();
   };
 
@@ -375,9 +342,6 @@ const AdminDashboard = () => {
           <button onClick={() => setActiveTab('careers')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'careers' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
             <Briefcase className="w-5 h-5" /> Careers
           </button>
-          <button onClick={() => setActiveTab('carousel')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'carousel' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
-            <Image className="w-5 h-5" /> Home Carousel
-          </button>
           <button onClick={() => setActiveTab('projects')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'projects' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
             <Briefcase className="w-5 h-5" /> Projects
           </button>
@@ -466,40 +430,6 @@ const AdminDashboard = () => {
                   <button onClick={() => deleteItem('careers', career.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 className="w-5 h-5"/></button>
                 </div>
               ))}
-            </div>
-          </div>
-        )}
-
-        {/* CAROUSEL */}
-        {activeTab === 'carousel' && (
-          <div>
-            <h1 className="text-3xl font-bold text-slate-800 mb-8">Home Page Carousel Images</h1>
-            <div className="bg-white p-6 rounded-2xl shadow-sm mb-8">
-              <h2 className="text-lg font-bold mb-4 flex items-center gap-2"><Plus className="w-5 h-5"/> Upload New Image</h2>
-              <form onSubmit={addCarouselImage} className="flex flex-col sm:flex-row gap-4">
-                <input type="file" accept="image/*,video/mp4,video/webm,video/ogg" required onChange={e => setCarouselImageFile(e.target.files[0])} className="border p-2 rounded-lg flex-1 bg-slate-50"/>
-                <button type="submit" className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700">Upload Media</button>
-              </form>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {carousel.map((src, index) => {
-                const isVideo = src.match(/\.(mp4|webm|ogg)$/i);
-                return (
-                <div key={index} className="relative group bg-slate-200 rounded-xl overflow-hidden aspect-[4/5]">
-                  {isVideo ? (
-                    <video src={src} className="w-full h-full object-cover" autoPlay loop muted playsInline />
-                  ) : (
-                    <img src={src} className="w-full h-full object-cover" alt={`Carousel ${index}`} />
-                  )}
-                  <button 
-                    onClick={() => removeCarouselImage(index)}
-                    className="absolute inset-0 bg-red-600/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity font-bold"
-                  >
-                    <Trash2 className="w-8 h-8 mb-2" /><br/>Delete
-                  </button>
-                </div>
-              )})}
             </div>
           </div>
         )}
@@ -835,23 +765,24 @@ const AdminDashboard = () => {
                 </h2>
                 
                 {/* Live Preview Container resembling Home.jsx styles */}
-                <div className="bg-[#FFF9F5] border border-orange-200/40 rounded-3xl p-6 shadow-md relative overflow-hidden flex flex-col justify-between min-h-[380px]">
+                <div className="bg-[#FFF9F5] border border-orange-200/40 rounded-3xl p-6 shadow-md relative overflow-visible flex flex-col justify-between min-h-[460px]">
                   {/* Subtle decorative blob */}
                   <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-orange-100/60 rounded-full blur-[40px] pointer-events-none -z-10"></div>
                   
                   <div className="space-y-4">
                     {/* Pulsing live badge mimic */}
                     {homeHeroForm.isAnnouncementActive ? (
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 text-orange-600 font-extrabold text-[10px] tracking-wider uppercase border border-orange-200/50">
-                        <span className="relative flex h-1.5 w-1.5">
+                      <div className="inline-flex items-center gap-3 px-4.5 py-2.5 rounded-full bg-yellow-100/90 text-amber-800 font-extrabold text-xs border border-yellow-300/80 backdrop-blur-sm shadow-sm tracking-wider uppercase">
+                        <span className="relative flex h-3 w-3 shrink-0">
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-600"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-red-600"></span>
                         </span>
-                        🔴 LIVE REGISTRATION OPEN
+                        <span className="leading-none mt-[1px]">LIVE REGISTRATION OPEN</span>
                       </div>
                     ) : (
-                      <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-orange-100 text-orange-600 font-bold text-[10px] tracking-wider uppercase border border-orange-200/50">
-                        🚀 SERVICES • EDUCATION • INTERNSHIPS
+                      <div className="inline-flex items-center gap-2.5 px-4.5 py-2.5 rounded-full bg-yellow-100/90 text-amber-800 font-bold text-xs border border-yellow-300/80 tracking-wider backdrop-blur-sm shadow-sm uppercase">
+                        <Rocket className="w-3.5 h-3.5 animate-bounce text-amber-600" />
+                        <span className="leading-none mt-[1px]">🌐 IT Services • 🎓 Education • 💼 Internship</span>
                       </div>
                     )}
 
@@ -885,35 +816,60 @@ const AdminDashboard = () => {
                     </p>
                   </div>
 
-                  {/* Banner mockup preview */}
-                  <div className="mt-6 relative w-full aspect-[2/1] bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 flex items-center justify-center group shadow-sm">
-                    {homeHeroImageFile ? (
-                      <img 
-                        src={URL.createObjectURL(homeHeroImageFile)} 
-                        className="w-full h-full object-cover" 
-                        alt="Local upload preview" 
-                      />
-                    ) : homeHeroForm.imageUrl ? (
-                      <img 
-                        src={homeHeroForm.imageUrl} 
-                        className="w-full h-full object-cover" 
-                        alt="Remote upload preview" 
-                      />
-                    ) : (
-                      <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5"><Image className="w-4 h-4"/> No Banner Image Selected</span>
+                  {/* Banner mockup preview (matching the physical tilted card) */}
+                  <div className="mt-6 relative w-full flex justify-center items-center overflow-visible">
+                    {homeHeroForm.isAnnouncementActive && (
+                      <>
+                        {/* Mock Floating Emojis */}
+                        <div className="absolute -top-4 -left-3 text-2xl select-none z-30 animate-bounce">📢</div>
+                        <div className="absolute -top-5 -right-3 text-2xl select-none z-30 animate-bounce delay-150">🔔</div>
+                        <div className="absolute bottom-2 -right-4 text-xl select-none z-30 animate-pulse">✨</div>
+                        <div className="absolute -bottom-4 -left-3 text-2.5xl select-none z-30 animate-bounce">🎉</div>
+                      </>
                     )}
 
-                    {homeHeroForm.isAnnouncementActive && (
-                      <div className="absolute bottom-2 left-2 right-2 py-2 px-3 bg-white/90 backdrop-blur-sm rounded-xl border border-white/40 flex items-center justify-between shadow-md">
-                        <div>
-                          <span className="text-[7px] uppercase tracking-wider font-extrabold text-[#F05A28] block">Announcement</span>
-                          <span className="text-[10px] font-black text-[#0A2540] truncate max-w-[150px] block">{homeHeroForm.heading || "Summer Internship"}</span>
+                    {/* Polaroid Memo Flyer preview card */}
+                    <div 
+                      className={`relative w-full max-w-[340px] bg-white border border-slate-100 rounded-3xl p-2.5 shadow-xl flex flex-col transition-all duration-300 ${
+                        homeHeroForm.isAnnouncementActive ? 'rotate-[-2.5deg]' : ''
+                      }`}
+                    >
+                      {/* Pinned washi tape representation */}
+                      {homeHeroForm.isAnnouncementActive && (
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-20 h-5 bg-amber-100/80 border border-amber-200/40 rounded-sm rotate-[-1.5deg] z-30 flex items-center justify-center pointer-events-none select-none">
+                          <span className="w-6 h-[0.5px] bg-slate-300/30"></span>
                         </div>
-                        <div className="h-5 w-5 rounded-full bg-[#F05A28] flex items-center justify-center text-white">
+                      )}
+
+                      {/* Mock Image container */}
+                      <div className="w-full relative overflow-hidden rounded-[1.2rem] bg-slate-100 flex items-center justify-center aspect-[1.45] shadow-inner z-10">
+                        {homeHeroImageFile ? (
+                          <>
+                            <img src={URL.createObjectURL(homeHeroImageFile)} className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-125 select-none pointer-events-none" alt="Blur" />
+                            <img src={URL.createObjectURL(homeHeroImageFile)} className="relative z-10 max-w-full max-h-full object-contain p-0.5 rounded-lg border border-white/20 bg-white/5" alt="Local" />
+                          </>
+                        ) : homeHeroForm.imageUrl ? (
+                          <>
+                            <img src={homeHeroForm.imageUrl} className="absolute inset-0 w-full h-full object-cover blur-xl opacity-40 scale-125 select-none pointer-events-none" alt="Blur" />
+                            <img src={homeHeroForm.imageUrl} className="relative z-10 max-w-full max-h-full object-contain p-0.5 rounded-lg border border-white/20 bg-white/5" alt="Remote" />
+                          </>
+                        ) : (
+                          <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1"><Image className="w-3.5 h-3.5"/> No Image Selected</span>
+                        )}
+                      </div>
+
+                      {/* Text details below the image */}
+                      <div className="pt-2 px-1 flex items-center justify-between z-20">
+                        <div className="max-w-[80%] text-left">
+                          <span className="text-[7px] uppercase tracking-wider font-extrabold text-[#F05A28] block">Announcement</span>
+                          <span className="text-[10px] font-black text-[#0A2540] truncate block">{homeHeroForm.heading || "Summer Internship"}</span>
+                          <span className="text-[9px] text-slate-500 font-semibold truncate block mt-0.5">{homeHeroForm.subtitle}</span>
+                        </div>
+                        <div className="h-6 w-6 rounded-full bg-[#F05A28] flex items-center justify-center text-white shrink-0 ml-2">
                           <ArrowRight className="w-3 h-3" />
                         </div>
                       </div>
-                    )}
+                    </div>
                   </div>
 
                   {homeHeroForm.isAnnouncementActive && homeHeroForm.tickerText && (

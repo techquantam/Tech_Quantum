@@ -24,11 +24,6 @@ const projectSchema = new mongoose.Schema({
 });
 const Project = mongoose.model('Project', projectSchema);
 
-const carouselSchema = new mongoose.Schema({
-  imageUrl: String
-});
-const Carousel = mongoose.model('Carousel', carouselSchema);
-
 const internHeroSchema = new mongoose.Schema({
   videoUrl: String
 });
@@ -71,7 +66,6 @@ module.exports = {
   Blog,
   Career,
   Project,
-  Carousel,
   InternHero,
   HomeHero,
   InternTestimonial,

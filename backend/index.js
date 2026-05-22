@@ -262,7 +262,10 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_CLOUD_NAME !== '
     cloudinary: cloudinary,
     params: {
       folder: 'cyvanta_uploads',
-      resource_type: 'auto'
+      resource_type: 'auto',
+      transformation: [
+        { quality: 'auto', fetch_format: 'auto' }
+      ]
     }
   });
 } else {
@@ -350,17 +353,6 @@ app.delete('/api/careers/:id', verifyAdmin, async (req, res) => {
   res.json({ success: true });
 });
 
-// --- CAROUSEL API ---
-app.get('/api/carousel', async (req, res) => {
-  const images = await models.Carousel.find();
-  res.json(images.map(img => img.imageUrl));
-});
-app.post('/api/carousel', verifyAdmin, async (req, res) => {
-  await models.Carousel.deleteMany({});
-  const promises = req.body.images.map(url => new models.Carousel({ imageUrl: url }).save());
-  await Promise.all(promises);
-  res.json({ success: true });
-});
 
 // --- PROJECTS API ---
 app.get('/api/projects', async (req, res) => {
