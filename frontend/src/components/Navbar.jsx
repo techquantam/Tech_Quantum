@@ -19,7 +19,7 @@ const Navbar = () => {
 
   return (
     <>
-      <nav className="fixed w-full z-50 bg-blue-600/20 backdrop-blur-lg border-b border-white/20 shadow-lg">
+      <nav className="fixed w-full z-[100] bg-blue-600/20 backdrop-blur-lg border-b border-white/20 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-2 group">

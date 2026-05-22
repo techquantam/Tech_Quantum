@@ -71,7 +71,7 @@ const Home = () => {
     <div className="min-h-screen bg-[#FFF9F5]">
       {/* Top Ticker Marquee */}
       {heroData?.isAnnouncementActive && (
-        <div className="w-full bg-gradient-to-r from-[#F05A28] via-[#F97316] to-[#F05A28] text-white py-3.5 overflow-hidden relative z-50 shadow-md">
+        <div className="w-full bg-gradient-to-r from-[#F05A28] via-[#F97316] to-[#F05A28] text-white py-3.5 overflow-hidden relative z-30 shadow-md">
           <div className="flex whitespace-nowrap">
             <motion.div
               className="flex gap-8 items-center text-xs sm:text-sm font-bold tracking-widest uppercase"
