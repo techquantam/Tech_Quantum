@@ -400,10 +400,14 @@ app.get('/api/home-hero', async (req, res) => {
         imageUrl: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80",
         redirectUrl: "/internship",
         isAnnouncementActive: true,
-        tickerText: "🔥 Summer Internship Registrations Open Now"
+        tickerText: "🔥 Summer Internship Registrations Open Now",
+        lmsUrl: "https://cyvantalms.techquantum.in/login"
       };
     } else {
       hero = toFrontEnd(hero);
+      if (!hero.lmsUrl) {
+        hero.lmsUrl = "https://cyvantalms.techquantum.in/login";
+      }
     }
     res.json(hero);
   } catch (error) {

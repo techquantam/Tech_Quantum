@@ -39,7 +39,8 @@ const AdminDashboard = () => {
     imageUrl: '',
     redirectUrl: '',
     isAnnouncementActive: false,
-    tickerText: ''
+    tickerText: '',
+    lmsUrl: ''
   });
   const [homeHeroImageFile, setHomeHeroImageFile] = useState(null);
 
@@ -83,7 +84,8 @@ const AdminDashboard = () => {
         imageUrl: heroData.imageUrl || '',
         redirectUrl: heroData.redirectUrl || '',
         isAnnouncementActive: !!heroData.isAnnouncementActive,
-        tickerText: heroData.tickerText || ''
+        tickerText: heroData.tickerText || '',
+        lmsUrl: heroData.lmsUrl || ''
       });
     } catch (error) {
       console.error('Failed to fetch data', error);
@@ -711,6 +713,19 @@ const AdminDashboard = () => {
                     />
                   </div>
 
+                  {/* LMS Portal URL */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-extrabold text-slate-700 block">LMS Portal URL</label>
+                    <input 
+                      type="text" 
+                      required
+                      placeholder="e.g. https://cyvantalms.techquantum.in/login" 
+                      value={homeHeroForm.lmsUrl} 
+                      onChange={e => setHomeHeroForm({...homeHeroForm, lmsUrl: e.target.value})} 
+                      className="w-full border border-slate-200 p-3.5 rounded-xl bg-slate-50 focus:bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none font-medium transition-all"
+                    />
+                  </div>
+
                   {homeHeroForm.isAnnouncementActive && (
                     <>
                       {/* Redirect Link */}
@@ -769,7 +784,23 @@ const AdminDashboard = () => {
                   {/* Subtle decorative blob */}
                   <div className="absolute top-0 right-0 w-[150px] h-[150px] bg-orange-100/60 rounded-full blur-[40px] pointer-events-none -z-10"></div>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-4 flex flex-col items-start">
+                    {/* LMS Learning Portal Highlighted Banner Preview */}
+                    <a
+                      href={homeHeroForm.lmsUrl || "https://cyvantalms.techquantum.in/login"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-900 text-white border-2 border-orange-500 font-extrabold text-[9px] shadow-[0_0_12px_rgba(249,115,22,0.3)] hover:shadow-[0_0_18px_rgba(249,115,22,0.45)] transition-all duration-300 cursor-pointer group"
+                    >
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                      </span>
+                      <BookOpen className="w-3 h-3 text-orange-400 animate-pulse" />
+                      <span className="tracking-wider uppercase">Explore Online LMS Portal (Learn Online)</span>
+                      <ArrowRight className="w-3 h-3 text-orange-400 group-hover:translate-x-0.5 transition-transform duration-300" />
+                    </a>
+
                     {/* Pulsing live badge mimic */}
                     {homeHeroForm.isAnnouncementActive ? (
                       <div className="inline-flex items-center gap-3 px-4.5 py-2.5 rounded-full bg-yellow-100/90 text-amber-800 font-extrabold text-xs border border-yellow-300/80 backdrop-blur-sm shadow-sm tracking-wider uppercase">

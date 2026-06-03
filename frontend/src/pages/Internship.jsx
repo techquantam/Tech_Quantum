@@ -322,7 +322,7 @@ const Internship = () => {
               <div className="mb-8">
                 <Trophy className="w-14 h-14 text-yellow-400 mb-6" strokeWidth={1.5} />
                 <h2 className="text-3xl md:text-5xl font-extrabold text-orange-500 leading-tight mb-6">
-                  Cyvanta – Personalised Learning Website Comming Soon ⌛.
+                  Cyvanta – Personalised Learning Website.
                 </h2>
                 <p className="text-slate-300 text-lg mb-8 leading-relaxed font-medium">
                   Experience next-gen e-learning with Cyvanta's official training & learning website. From buying courses online to accessing your student dashboard, everything you need to learn, practice, and grow is in one place.
@@ -397,14 +397,14 @@ const Internship = () => {
               </p>
               <div className="space-y-6">
                 {/* 1. Animated Certificate Graphic */}
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.02 }}
                   className="relative bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer"
                 >
                   <div className="absolute right-0 top-0 w-32 h-32 bg-amber-100/50 rounded-bl-full -z-10 group-hover:scale-125 transition-transform duration-500"></div>
                   <div className="flex flex-col sm:flex-row items-center gap-6 relative z-10">
                     <div className="relative w-32 h-24 shrink-0" style={{ perspective: 1000 }}>
-                      <motion.div 
+                      <motion.div
                         className="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 rounded-lg p-3 border-2 border-amber-500 shadow-[0_10px_20px_rgba(0,0,0,0.2)] flex flex-col justify-between relative overflow-hidden"
                         initial={{ rotateY: -15, rotateX: 10 }}
                         whileHover={{ rotateY: 5, rotateX: 0, scale: 1.05 }}
@@ -433,16 +433,16 @@ const Internship = () => {
                           </div>
                           <div className="h-1.5 w-10 bg-slate-500/80 rounded"></div>
                         </div>
-                        
+
                         {/* Diagonal Shine Effect */}
-                        <motion.div 
+                        <motion.div
                           className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent skew-x-12"
                           animate={{ x: ["-200%", "200%"] }}
                           transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
                         />
                       </motion.div>
                     </div>
-                    
+
                     <div>
                       <h4 className="font-bold text-slate-800 text-lg mb-2 flex items-center gap-2">
                         Verifiable Certificate <CheckCircle2 className="w-5 h-5 text-green-500" />
@@ -455,7 +455,7 @@ const Internship = () => {
                 </motion.div>
 
                 {/* 2. Animated Welcome Kit Graphic */}
-                <motion.div 
+                <motion.div
                   whileHover={{ scale: 1.02 }}
                   className="relative bg-white p-6 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group cursor-pointer"
                 >
@@ -463,9 +463,9 @@ const Internship = () => {
                   <div className="flex flex-col sm:flex-row items-center gap-6 relative z-10">
                     <div className="relative w-32 h-28 shrink-0 flex items-center justify-center">
                       <motion.div
-                         animate={{ y: [-4, 4, -4] }}
-                         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                         className="relative w-24 h-24"
+                        animate={{ y: [-4, 4, -4] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                        className="relative w-24 h-24"
                       >
                         {/* Custom Polo Shirt SVG */}
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full drop-shadow-[0_8px_15px_rgba(0,0,0,0.15)]">
@@ -481,26 +481,26 @@ const Internship = () => {
                           <circle cx="12" cy="7" r="0.6" fill="white" />
                           <circle cx="12" cy="8.5" r="0.6" fill="white" />
                         </svg>
-                        
+
                         {/* Company Logo Placed on T-Shirt Pocket Area */}
                         <div className="absolute top-[34%] left-1/2 -translate-x-1/2 flex items-center justify-center">
-                           <span className="text-[5px] font-black text-white tracking-widest drop-shadow-md">CYVANTA</span>
+                          <span className="text-[5px] font-black text-white tracking-widest drop-shadow-md">CYVANTA</span>
                         </div>
-                        
+
                         {/* Sparkle / Floating Elements */}
-                        <motion.div 
+                        <motion.div
                           className="absolute -top-1 -right-1 w-3 h-3 bg-orange-400 rounded-full blur-[1.5px]"
                           animate={{ y: [0, -10, 0], opacity: [0, 1, 0], scale: [1, 1.2, 1] }}
                           transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
                         />
-                        <motion.div 
+                        <motion.div
                           className="absolute bottom-2 -left-2 w-2 h-2 bg-amber-400 rounded-full blur-[1px]"
                           animate={{ y: [0, -15, 0], opacity: [0, 1, 0], scale: [1, 1.2, 1] }}
                           transition={{ duration: 2.5, repeat: Infinity }}
                         />
                       </motion.div>
                     </div>
-                    
+
                     <div>
                       <h4 className="font-bold text-slate-800 text-lg mb-2 flex items-center gap-2">
                         Internship Welcome Kit <Trophy className="w-5 h-5 text-orange-500" />
@@ -644,10 +644,10 @@ const Internship = () => {
 
       {/* Contact Modal Integration */}
       <ContactModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} serviceName="Internship Program Inquiry" />
-      
+
       {/* Internship Registration Modal */}
       <InternshipRegistrationModal isOpen={isRegModalOpen} onClose={() => setIsRegModalOpen(false)} />
-      
+
       {/* Internship Enquiry Modal */}
       <InternshipEnquiryModal isOpen={isEnquiryModalOpen} onClose={() => setIsEnquiryModalOpen(false)} />
     </div>

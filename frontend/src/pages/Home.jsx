@@ -105,8 +105,26 @@ const Home = () => {
                 initial={{ opacity: 0, x: -30 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8 }}
-                className="max-w-2xl"
+                className="max-w-2xl flex flex-col items-start"
               >
+                {/* LMS Learning Portal Highlighted Banner */}
+                <motion.a
+                  href={heroData?.lmsUrl || "https://cyvantalms.techquantum.in/login"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.05, y: -2, boxShadow: "0 0 25px rgba(249, 115, 22, 0.5)" }}
+                  whileTap={{ scale: 0.95 }}
+                  className="inline-flex items-center gap-2.5 px-6 py-3 rounded-full bg-slate-900 text-white border-2 border-orange-500 font-extrabold text-xs mb-5 shadow-[0_0_15px_rgba(249,115,22,0.35)] transition-all duration-300 cursor-pointer group"
+                >
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500"></span>
+                  </span>
+                  <BookOpen className="w-4 h-4 text-orange-400 animate-pulse" />
+                  <span className="tracking-wider uppercase">Explore Online LMS Portal (Learn Online)</span>
+                  <ArrowRight className="w-4 h-4 text-orange-400 group-hover:translate-x-1 transition-transform duration-300" />
+                </motion.a>
+
                 {/* Live Pulse Indicator Badge */}
                 {heroData?.isAnnouncementActive ? (
                   <motion.div

@@ -35,7 +35,8 @@ const homeHeroSchema = new mongoose.Schema({
   imageUrl: String,
   redirectUrl: String,
   isAnnouncementActive: Boolean,
-  tickerText: String
+  tickerText: String,
+  lmsUrl: String
 });
 const HomeHero = mongoose.model('HomeHero', homeHeroSchema);
 
