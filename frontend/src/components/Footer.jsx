@@ -48,6 +48,7 @@ const Footer = () => {
               <li><Link to="/career" className="hover:text-white transition-all">Career</Link></li>
               <li><button onClick={() => setIsModalOpen(true)} className="hover:text-white transition-all">Contact Us</button></li>
               <li><Link to="/blog" className="hover:text-white transition-all">Blog</Link></li>
+              <li><Link to="/privacy-policy" className="hover:text-white transition-all">Privacy Policy</Link></li>
             </ul>
           </div>
 
