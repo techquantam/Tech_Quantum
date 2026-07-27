@@ -495,6 +495,121 @@ app.delete('/api/internship/gallery/:id', verifyAdmin, async (req, res) => {
   res.json({ success: true });
 });
 
+// --- STUDENT & CERTIFICATE MANAGEMENT APIs ---
+app.post('/api/admin/students', verifyAdmin, async (req, res) => {
+  try {
+    const { certificateNumber } = req.body;
+    if (!certificateNumber) {
+      return res.status(400).json({ error: 'Certificate Number is required.' });
+    }
+    const existing = await models.Student.findOne({ certificateNumber });
+    if (existing) {
+      return res.status(400).json({ error: 'Certificate Number already exists.' });
+    }
+    const student = new models.Student(req.body);
+    await student.save();
+    res.json(toFrontEnd(student));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/admin/students', verifyAdmin, async (req, res) => {
+  try {
+    const { search, course, page = 1, limit = 10 } = req.query;
+    const query = {};
+
+    if (search) {
+      query.$or = [
+        { certificateNumber: { $regex: search, $options: 'i' } },
+        { studentName: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    if (course && course !== 'All') {
+      query.course = course;
+    }
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const total = await models.Student.countDocuments(query);
+    const students = await models.Student.find(query)
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    res.json({
+      students: students.map(toFrontEnd),
+      total,
+      pages: Math.ceil(total / parseInt(limit)),
+      currentPage: parseInt(page)
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/admin/students/:id', verifyAdmin, async (req, res) => {
+  try {
+    const student = await models.Student.findById(req.params.id);
+    if (student) {
+      res.json(toFrontEnd(student));
+    } else {
+      res.status(404).json({ error: 'Student not found.' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put('/api/admin/students/:id', verifyAdmin, async (req, res) => {
+  try {
+    const { certificateNumber } = req.body;
+    if (certificateNumber) {
+      const existing = await models.Student.findOne({ 
+        certificateNumber,
+        _id: { $ne: req.params.id }
+      });
+      if (existing) {
+        return res.status(400).json({ error: 'Certificate Number already exists.' });
+      }
+    }
+    const student = await models.Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (student) {
+      res.json(toFrontEnd(student));
+    } else {
+      res.status(404).json({ error: 'Student not found.' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/admin/students/:id', verifyAdmin, async (req, res) => {
+  try {
+    const student = await models.Student.findByIdAndDelete(req.params.id);
+    if (student) {
+      res.json({ success: true });
+    } else {
+      res.status(404).json({ error: 'Student not found.' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/verify/:registrationNumber', async (req, res) => {
+  try {
+    const student = await models.Student.findOne({ certificateNumber: req.params.registrationNumber });
+    if (student) {
+      res.json(toFrontEnd(student));
+    } else {
+      res.status(404).json({ error: 'Certificate not found.' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });

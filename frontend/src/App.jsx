@@ -14,6 +14,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Verify from './pages/Verify';
+import Certificate from './pages/Certificate';
 
 
 function App() {
@@ -35,6 +36,8 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/verify" element={<Verify />} />
+          <Route path="/certificate" element={<Certificate />} />
+          <Route path="/certificate/:registrationNumber" element={<Certificate />} />
         </Routes>
       </Layout>
     </Router>

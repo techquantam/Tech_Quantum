@@ -63,6 +63,21 @@ const internGallerySchema = new mongoose.Schema({
 });
 const InternGallery = mongoose.model('InternGallery', internGallerySchema);
 
+const studentSchema = new mongoose.Schema({
+  certificateNumber: { type: String, unique: true, required: true },
+  studentName: { type: String, required: true },
+  college: String,
+  branch: String,
+  course: String,
+  internshipProgram: String,
+  duration: String,
+  issueDate: String,
+  photoUrl: String,
+  pdfUrl: String,
+  status: { type: String, default: 'Completed' } // Completed / Revoked
+}, { timestamps: true });
+const Student = mongoose.model('Student', studentSchema);
+
 module.exports = {
   Blog,
   Career,
@@ -72,5 +87,6 @@ module.exports = {
   InternTestimonial,
   InternFaq,
   InternCollege,
-  InternGallery
+  InternGallery,
+  Student
 };

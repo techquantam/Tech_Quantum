@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Trash2, Plus, Image, BookOpen, Briefcase, Pencil, ArrowRight, Rocket } from 'lucide-react';
+import { LogOut, Trash2, Plus, Image, BookOpen, Briefcase, Pencil, ArrowRight, Rocket, Search, Calendar, Check, ExternalLink, AlertCircle } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('blogs');
@@ -43,6 +43,30 @@ const AdminDashboard = () => {
     lmsUrl: ''
   });
   const [homeHeroImageFile, setHomeHeroImageFile] = useState(null);
+
+  // Student & Certificate Management States
+  const [studentForm, setStudentForm] = useState({
+    certificateNumber: '',
+    studentName: '',
+    college: '',
+    branch: '',
+    course: '',
+    internshipProgram: '',
+    duration: '',
+    issueDate: '',
+    photoUrl: '',
+    pdfUrl: '',
+    status: 'Completed'
+  });
+  const [studentPhotoFile, setStudentPhotoFile] = useState(null);
+  const [studentPdfFile, setStudentPdfFile] = useState(null);
+  const [students, setStudents] = useState([]);
+  const [studentSearch, setStudentSearch] = useState('');
+  const [studentCourseFilter, setStudentCourseFilter] = useState('All');
+  const [studentPage, setStudentPage] = useState(1);
+  const [studentTotalPages, setStudentTotalPages] = useState(1);
+  const [studentTotalCount, setStudentTotalCount] = useState(0);
+  const [editingStudentId, setEditingStudentId] = useState(null);
 
   const navigate = useNavigate();
   const token = localStorage.getItem('adminToken');
@@ -332,6 +356,147 @@ const AdminDashboard = () => {
     }
   };
 
+  // Student CRUD operations
+  const fetchStudents = async () => {
+    try {
+      const queryParams = new URLSearchParams({
+        search: studentSearch,
+        course: studentCourseFilter,
+        page: studentPage,
+        limit: 10
+      });
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/admin/students?${queryParams}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setStudents(data.students || []);
+        setStudentTotalPages(data.pages || 1);
+        setStudentTotalCount(data.total || 0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch students', err);
+    }
+  };
+
+  useEffect(() => {
+    if (token && (activeTab === 'student_list' || activeTab === 'add_student' || activeTab === 'edit_student')) {
+      fetchStudents();
+    }
+  }, [token, activeTab, studentSearch, studentCourseFilter, studentPage]);
+
+  const saveStudent = async (e) => {
+    e.preventDefault();
+    let finalPhotoUrl = studentForm.photoUrl;
+    let finalPdfUrl = studentForm.pdfUrl;
+
+    try {
+      if (studentPhotoFile) {
+        finalPhotoUrl = await handleFileUpload(studentPhotoFile);
+      }
+      if (studentPdfFile) {
+        finalPdfUrl = await handleFileUpload(studentPdfFile);
+      }
+    } catch (err) {
+      alert('Failed to upload files: ' + err.message);
+      return;
+    }
+
+    const payload = {
+      ...studentForm,
+      photoUrl: finalPhotoUrl,
+      pdfUrl: finalPdfUrl
+    };
+
+    try {
+      const url = editingStudentId 
+        ? `${import.meta.env.VITE_API_URL || ""}/api/admin/students/${editingStudentId}`
+        : `${import.meta.env.VITE_API_URL || ""}/api/admin/students`;
+      const method = editingStudentId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to save student.');
+      }
+
+      alert(editingStudentId ? 'Student updated successfully!' : 'Student added successfully!');
+      resetStudentForm();
+      setActiveTab('student_list');
+      fetchStudents();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const resetStudentForm = () => {
+    setStudentForm({
+      certificateNumber: '',
+      studentName: '',
+      college: '',
+      branch: '',
+      course: '',
+      internshipProgram: '',
+      duration: '',
+      issueDate: '',
+      photoUrl: '',
+      pdfUrl: '',
+      status: 'Completed'
+    });
+    setStudentPhotoFile(null);
+    setStudentPdfFile(null);
+    setEditingStudentId(null);
+  };
+
+  const handleEditStudent = (student) => {
+    setStudentForm({
+      certificateNumber: student.certificateNumber || '',
+      studentName: student.studentName || '',
+      college: student.college || '',
+      branch: student.branch || '',
+      course: student.course || '',
+      internshipProgram: student.internshipProgram || '',
+      duration: student.duration || '',
+      issueDate: student.issueDate || '',
+      photoUrl: student.photoUrl || '',
+      pdfUrl: student.pdfUrl || '',
+      status: student.status || 'Completed'
+    });
+    setEditingStudentId(student.id);
+    setActiveTab('edit_student');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteStudent = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this student record?')) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/admin/students/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        fetchStudents();
+      } else {
+        alert('Failed to delete student.');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCancel = () => {
+    resetStudentForm();
+    setActiveTab('student_list');
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 flex">
       {/* Sidebar */}
@@ -366,6 +531,17 @@ const AdminDashboard = () => {
           </button>
           <button onClick={() => setActiveTab('intern_gallery')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'intern_gallery' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
             <Image className="w-5 h-5" /> Gallery
+          </button>
+
+          <div className="pt-4 pb-2 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Internship Management</div>
+          <button onClick={() => { resetStudentForm(); setActiveTab('add_student'); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'add_student' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
+            <Plus className="w-5 h-5" /> Add Student
+          </button>
+          <button onClick={() => setActiveTab('student_list')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'student_list' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
+            <BookOpen className="w-5 h-5" /> Student List
+          </button>
+          <button onClick={() => setActiveTab('edit_student')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === 'edit_student' ? 'bg-blue-600' : 'hover:bg-slate-800'}`}>
+            <Pencil className="w-5 h-5" /> Edit Student
           </button>
         </nav>
         <div className="p-4">
@@ -911,6 +1087,319 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ADD STUDENT */}
+        {activeTab === 'add_student' && (
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 mb-8">Add Student Record</h1>
+            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 max-w-4xl">
+              <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-slate-800 pb-3 border-b">
+                <Plus className="w-5 h-5 text-blue-600"/> Student Certificate Information
+              </h2>
+              <form onSubmit={saveStudent} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Certificate Number *</label>
+                  <input required placeholder="e.g. TQ-2026-001" value={studentForm.certificateNumber} onChange={e => setStudentForm({...studentForm, certificateNumber: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student Name *</label>
+                  <input required placeholder="e.g. Amit Kumar" value={studentForm.studentName} onChange={e => setStudentForm({...studentForm, studentName: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">College Name</label>
+                  <input placeholder="e.g. Delhi Technological University" value={studentForm.college} onChange={e => setStudentForm({...studentForm, college: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Branch</label>
+                  <input placeholder="e.g. Computer Science" value={studentForm.branch} onChange={e => setStudentForm({...studentForm, branch: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Course</label>
+                  <input placeholder="e.g. Web Development" value={studentForm.course} onChange={e => setStudentForm({...studentForm, course: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Internship Program</label>
+                  <input placeholder="e.g. Summer Internship Program 2026" value={studentForm.internshipProgram} onChange={e => setStudentForm({...studentForm, internshipProgram: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Duration</label>
+                  <input placeholder="e.g. 6 Weeks" value={studentForm.duration} onChange={e => setStudentForm({...studentForm, duration: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Certificate Issue Date (Optional)</label>
+                  <input placeholder="e.g. July 27, 2026" value={studentForm.issueDate} onChange={e => setStudentForm({...studentForm, issueDate: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status (Optional)</label>
+                  <select value={studentForm.status} onChange={e => setStudentForm({...studentForm, status: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-bold text-sm bg-white">
+                    <option value="Completed">Completed</option>
+                    <option value="Revoked">Revoked</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student Photo (Optional)</label>
+                  <input type="file" accept="image/*" onChange={e => setStudentPhotoFile(e.target.files[0])} className="border border-slate-200 p-2.5 rounded-xl bg-slate-50 text-xs font-semibold"/>
+                </div>
+
+                <div className="flex flex-col gap-1.5 md:col-span-2">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Certificate PDF (Optional)</label>
+                  <input type="file" accept=".pdf" onChange={e => setStudentPdfFile(e.target.files[0])} className="border border-slate-200 p-2.5 rounded-xl bg-slate-50 text-xs font-semibold"/>
+                </div>
+
+                <div className="md:col-span-2 flex gap-4 pt-4 border-t mt-4">
+                  <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/20 text-sm">
+                    Save Record
+                  </button>
+                  <button type="button" onClick={handleCancel} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 py-3.5 rounded-xl font-bold transition-colors text-sm">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* STUDENT LIST */}
+        {activeTab === 'student_list' && (
+          <div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+              <h1 className="text-3xl font-bold text-slate-800">Student List</h1>
+              <button onClick={() => { resetStudentForm(); setActiveTab('add_student'); }} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-blue-500/20 text-sm flex items-center gap-2">
+                <Plus className="w-4 h-4" /> Add Student
+              </button>
+            </div>
+
+            {/* Filters / Search Row */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-6 flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="w-5 h-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search by Certificate Number or Student Name..."
+                  value={studentSearch}
+                  onChange={e => { setStudentSearch(e.target.value); setStudentPage(1); }}
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:border-blue-500 outline-none text-slate-800 text-sm font-semibold"
+                />
+              </div>
+              <div className="w-full md:w-64">
+                <select
+                  value={studentCourseFilter}
+                  onChange={e => { setStudentCourseFilter(e.target.value); setStudentPage(1); }}
+                  className="w-full border border-slate-200 p-2.5 rounded-xl focus:border-blue-500 outline-none text-slate-800 text-sm font-bold bg-white"
+                >
+                  <option value="All">All Courses</option>
+                  <option value="Web Development">Web Development</option>
+                  <option value="Java Full Stack">Java Full Stack</option>
+                  <option value="Python">Python</option>
+                  <option value="Android Development">Android Development</option>
+                  <option value="UI/UX Design">UI/UX Design</option>
+                  <option value="Data Science">Data Science</option>
+                  <option value="AI/ML">AI/ML</option>
+                  <option value="Cyber Security">Cyber Security</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Student Records Table */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                      <th className="p-4">Certificate No</th>
+                      <th className="p-4">Student Name</th>
+                      <th className="p-4">Course</th>
+                      <th className="p-4">Status</th>
+                      <th className="p-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
+                    {students.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="p-8 text-center text-slate-400 font-semibold">
+                          No student records found.
+                        </td>
+                      </tr>
+                    ) : (
+                      students.map(student => (
+                        <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="p-4 font-mono font-bold text-slate-900">{student.certificateNumber}</td>
+                          <td className="p-4 font-extrabold text-slate-800">{student.studentName}</td>
+                          <td className="p-4 font-semibold text-slate-600">{student.course || 'N/A'}</td>
+                          <td className="p-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                              student.status === 'Completed'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-red-50 text-red-700 border-red-200'
+                            }`}>
+                              {student.status || 'Completed'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-right flex justify-end gap-2">
+                            <a
+                              href={`/certificate/${student.certificateNumber}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-slate-500 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors"
+                              title="View Verification URL"
+                            >
+                              <ExternalLink className="w-4.5 h-4.5" />
+                            </a>
+                            <button
+                              onClick={() => handleEditStudent(student)}
+                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                              title="Edit Record"
+                            >
+                              <Pencil className="w-4.5 h-4.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteStudent(student.id)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              title="Delete Record"
+                            >
+                              <Trash2 className="w-4.5 h-4.5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Pagination Controls */}
+            {studentTotalPages > 1 && (
+              <div className="flex items-center justify-between bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                  Showing page {studentPage} of {studentTotalPages} ({studentTotalCount} total records)
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    disabled={studentPage === 1}
+                    onClick={() => setStudentPage(p => Math.max(p - 1, 1))}
+                    className="px-4 py-2 border border-slate-200 text-xs font-bold text-slate-700 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    disabled={studentPage === studentTotalPages}
+                    onClick={() => setStudentPage(p => Math.min(p + 1, studentTotalPages))}
+                    className="px-4 py-2 border border-slate-200 text-xs font-bold text-slate-700 rounded-xl hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* EDIT STUDENT */}
+        {activeTab === 'edit_student' && (
+          <div>
+            <h1 className="text-3xl font-bold text-slate-800 mb-8">Edit Student Record</h1>
+            {!editingStudentId ? (
+              <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 text-center max-w-lg">
+                <AlertCircle className="w-12 h-12 text-slate-400 mx-auto mb-3" />
+                <h3 className="text-lg font-bold text-slate-800 mb-1">No Student Selected</h3>
+                <p className="text-slate-500 text-sm mb-6">Please navigate to the Student List tab and click Edit on a record to modify it.</p>
+                <button onClick={() => setActiveTab('student_list')} className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-md shadow-blue-500/10 text-sm">
+                  Go to Student List
+                </button>
+              </div>
+            ) : (
+              <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 max-w-4xl">
+                <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-slate-800 pb-3 border-b">
+                  <Pencil className="w-5 h-5 text-blue-600"/> Edit Student Certificate Details (ID: {editingStudentId})
+                </h2>
+                <form onSubmit={saveStudent} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Certificate Number *</label>
+                    <input required placeholder="e.g. TQ-2026-001" value={studentForm.certificateNumber} onChange={e => setStudentForm({...studentForm, certificateNumber: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student Name *</label>
+                    <input required placeholder="e.g. Amit Kumar" value={studentForm.studentName} onChange={e => setStudentForm({...studentForm, studentName: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">College Name</label>
+                    <input placeholder="e.g. Delhi Technological University" value={studentForm.college} onChange={e => setStudentForm({...studentForm, college: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Branch</label>
+                    <input placeholder="e.g. Computer Science" value={studentForm.branch} onChange={e => setStudentForm({...studentForm, branch: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Course</label>
+                    <input placeholder="e.g. Web Development" value={studentForm.course} onChange={e => setStudentForm({...studentForm, course: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Internship Program</label>
+                    <input placeholder="e.g. Summer Internship Program 2026" value={studentForm.internshipProgram} onChange={e => setStudentForm({...studentForm, internshipProgram: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Duration</label>
+                    <input placeholder="e.g. 6 Weeks" value={studentForm.duration} onChange={e => setStudentForm({...studentForm, duration: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Certificate Issue Date (Optional)</label>
+                    <input placeholder="e.g. July 27, 2026" value={studentForm.issueDate} onChange={e => setStudentForm({...studentForm, issueDate: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Status (Optional)</label>
+                    <select value={studentForm.status} onChange={e => setStudentForm({...studentForm, status: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-bold text-sm bg-white">
+                      <option value="Completed">Completed</option>
+                      <option value="Revoked">Revoked</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student Photo (Optional)</label>
+                    <input type="file" accept="image/*" onChange={e => setStudentPhotoFile(e.target.files[0])} className="border border-slate-200 p-2.5 rounded-xl bg-slate-50 text-xs font-semibold"/>
+                    {studentForm.photoUrl && !studentPhotoFile && (
+                      <span className="text-[10px] text-emerald-600 font-bold">Existing photo uploaded</span>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-1.5 md:col-span-2">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Certificate PDF (Optional)</label>
+                    <input type="file" accept=".pdf" onChange={e => setStudentPdfFile(e.target.files[0])} className="border border-slate-200 p-2.5 rounded-xl bg-slate-50 text-xs font-semibold"/>
+                    {studentForm.pdfUrl && !studentPdfFile && (
+                      <span className="text-[10px] text-emerald-600 font-bold">Existing certificate PDF uploaded</span>
+                    )}
+                  </div>
+
+                  <div className="md:col-span-2 flex gap-4 pt-4 border-t mt-4">
+                    <button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-bold transition-colors shadow-lg shadow-blue-500/20 text-sm">
+                      Update Record
+                    </button>
+                    <button type="button" onClick={handleCancel} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 py-3.5 rounded-xl font-bold transition-colors text-sm">
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
           </div>
         )}
 
