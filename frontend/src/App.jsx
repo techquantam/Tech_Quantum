@@ -35,7 +35,7 @@ function App() {
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/certificate" element={<Certificate />} />
+          <Route path="/verify" element={<Certificate />} />
           {/* <Route path="/certificate" element={<Certificate />} /> */}
           <Route path="/certificate/:registrationNumber" element={<Certificate />} />
         </Routes>
