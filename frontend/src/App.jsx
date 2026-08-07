@@ -15,6 +15,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 // import Verify from './pages/Verify';
 import Certificate from './pages/Certificate';
+import DeleteAccount from './pages/DeleteAccount';
 
 
 function App() {
@@ -38,6 +39,8 @@ function App() {
           <Route path="/verify" element={<Certificate />} />
           {/* <Route path="/certificate" element={<Certificate />} /> */}
           <Route path="/certificate/:registrationNumber" element={<Certificate />} />
+          <Route path="/delete-account" element={<DeleteAccount />} />
+          <Route path="/data-security" element={<DeleteAccount />} />
         </Routes>
       </Layout>
     </Router>
