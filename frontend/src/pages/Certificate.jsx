@@ -1,12 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, Mail, Award, Check, Copy, Search, Calendar, RotateCcw, ShieldCheck, ShieldAlert, FileText } from 'lucide-react';
+import { 
+  Globe, 
+  Mail, 
+  Award, 
+  Check, 
+  Copy, 
+  Search, 
+  Calendar, 
+  RotateCcw, 
+  ShieldCheck, 
+  ShieldAlert, 
+  FileText, 
+  GraduationCap 
+} from 'lucide-react';
 
 const Certificate = () => {
   const { registrationNumber } = useParams();
   const navigate = useNavigate();
 
+  const [selectedCategory, setSelectedCategory] = useState('B.Tech Student');
   const [searchNumber, setSearchNumber] = useState('');
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -18,7 +32,7 @@ const Certificate = () => {
     // Dynamic SEO titles matching current page state
     let titleText = "Certificate Verification | Cyvanta Tech Quantum Pvt. Ltd.";
     if (searched && student) {
-      titleText = `${student.studentName} - Verified Certificate | Cyvanta`;
+      titleText = `${student.studentName} - Verified ${student.studentType || 'Certificate'} | Cyvanta`;
     } else if (searched && error) {
       titleText = "Certificate Not Found | Cyvanta";
     }
@@ -28,7 +42,7 @@ const Certificate = () => {
     let originalDescription = "";
     if (metaDescription) {
       originalDescription = metaDescription.content;
-      metaDescription.content = "Verify the authenticity of certificates issued by Cyvanta Tech Quantum Pvt. Ltd. for our Internship Programs.";
+      metaDescription.content = "Verify the authenticity of Diploma and B.Tech certificates issued by Cyvanta Tech Quantum Pvt. Ltd. for our Internship Programs.";
     }
 
     return () => {
@@ -43,7 +57,7 @@ const Certificate = () => {
   useEffect(() => {
     if (registrationNumber) {
       setSearchNumber(registrationNumber);
-      verifyCertificate(registrationNumber);
+      verifyCertificate(registrationNumber, true);
     } else {
       setStudent(null);
       setError(null);
@@ -51,7 +65,7 @@ const Certificate = () => {
     }
   }, [registrationNumber]);
 
-  const verifyCertificate = async (regNo) => {
+  const verifyCertificate = async (regNo, isDirectParam = false) => {
     if (!regNo.trim()) return;
     setLoading(true);
     setError(null);
@@ -59,7 +73,8 @@ const Certificate = () => {
     setSearched(true);
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/verify/${encodeURIComponent(regNo.trim())}`);
+      const typeQuery = isDirectParam ? '' : `?type=${encodeURIComponent(selectedCategory)}`;
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/api/verify/${encodeURIComponent(regNo.trim())}${typeQuery}`);
       if (!res.ok) {
         if (res.status === 404) {
           throw new Error('Certificate Not Found');
@@ -67,6 +82,15 @@ const Certificate = () => {
         throw new Error('Verification failed. Please try again.');
       }
       const data = await res.json();
+
+      // If user searched in a category and data doesn't match that category, treat as Not Found
+      if (!isDirectParam && data.studentType && data.studentType !== selectedCategory) {
+        throw new Error('Certificate Not Found');
+      }
+
+      if (data.studentType) {
+        setSelectedCategory(data.studentType);
+      }
       setStudent(data);
     } catch (err) {
       setError(err.message);
@@ -78,7 +102,7 @@ const Certificate = () => {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchNumber.trim()) {
-      navigate(`/certificate/${encodeURIComponent(searchNumber.trim())}`);
+      verifyCertificate(searchNumber.trim(), false);
     }
   };
 
@@ -93,11 +117,11 @@ const Certificate = () => {
     setStudent(null);
     setError(null);
     setSearched(false);
-    navigate('/certificate');
+    navigate('/verify');
   };
 
   return (
-    <div className="min-h-[80vh] bg-gradient-to-b from-[#FFF9F5] via-white to-[#F8FAFC] py-12 px-4 flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-[85vh] bg-gradient-to-b from-[#FFF9F5] via-white to-[#F8FAFC] py-10 px-4 flex items-center justify-center relative overflow-hidden">
       {/* Decorative ambient background blobs */}
       <div className="absolute top-10 left-10 w-72 h-72 bg-blue-100/40 rounded-full blur-[100px] opacity-40 -z-10 animate-pulse"></div>
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-orange-100/40 rounded-full blur-[120px] opacity-40 -z-10 animate-pulse" style={{ animationDelay: '1s' }}></div>
@@ -139,7 +163,7 @@ const Certificate = () => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="py-6"
+              className="py-4"
             >
               <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
                 <Award className="w-8 h-8" />
@@ -147,16 +171,108 @@ const Certificate = () => {
               <h1 className="text-2xl sm:text-3xl font-black text-[#0A2540] tracking-tight mb-2">
                 Certificate Verification
               </h1>
-              <p className="text-slate-500 text-xs sm:text-sm max-w-md mx-auto mb-8 font-medium">
+              <p className="text-slate-500 text-xs sm:text-sm max-w-md mx-auto mb-6 font-medium">
                 Verify the status and details of internship completion certificates issued by Cyvanta Tech Quantum Pvt. Ltd.
               </p>
 
+              {/* 2 Card Options: Diploma Student & B.Tech Student */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mb-6 text-left">
+                {/* Diploma Student Card */}
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setSelectedCategory('Diploma Student');
+                    setError(null);
+                  }}
+                  className={`cursor-pointer p-4 rounded-2xl border-2 transition-all flex flex-col justify-between relative overflow-hidden ${
+                    selectedCategory === 'Diploma Student'
+                      ? 'bg-gradient-to-br from-amber-500/10 via-amber-50 to-orange-50/50 border-amber-500 shadow-lg shadow-amber-500/10 ring-2 ring-amber-400/20'
+                      : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/60 shadow-sm'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+                      selectedCategory === 'Diploma Student'
+                        ? 'bg-amber-500 text-white shadow-md shadow-amber-500/30'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      <GraduationCap className="w-6 h-6" />
+                    </div>
+                    {selectedCategory === 'Diploma Student' ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-black tracking-wider uppercase shadow-sm">
+                        <Check className="w-3 h-3 stroke-[3]" /> Active
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Select
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-black text-base text-[#0A2540] tracking-tight">
+                      Diploma Student
+                    </h3>
+                    <p className="text-[11px] font-semibold text-slate-500 leading-snug mt-0.5">
+                      Polytechnic & Diploma internship certificates
+                    </p>
+                  </div>
+                </motion.div>
+
+                {/* B.Tech Student Card */}
+                <motion.div
+                  whileHover={{ y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    setSelectedCategory('B.Tech Student');
+                    setError(null);
+                  }}
+                  className={`cursor-pointer p-4 rounded-2xl border-2 transition-all flex flex-col justify-between relative overflow-hidden ${
+                    selectedCategory === 'B.Tech Student'
+                      ? 'bg-gradient-to-br from-blue-600/10 via-blue-50 to-indigo-50/50 border-blue-600 shadow-lg shadow-blue-500/10 ring-2 ring-blue-500/20'
+                      : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/60 shadow-sm'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors ${
+                      selectedCategory === 'B.Tech Student'
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}>
+                      <Award className="w-6 h-6" />
+                    </div>
+                    {selectedCategory === 'B.Tech Student' ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-600 text-white text-[10px] font-black tracking-wider uppercase shadow-sm">
+                        <Check className="w-3 h-3 stroke-[3]" /> Active
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Select
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-black text-base text-[#0A2540] tracking-tight">
+                      B.Tech Student
+                    </h3>
+                    <p className="text-[11px] font-semibold text-slate-500 leading-snug mt-0.5">
+                      B.Tech & Degree internship certificates
+                    </p>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Dynamic Verification Form */}
               <form onSubmit={handleSearchSubmit} className="max-w-md mx-auto relative">
                 <div className="relative">
                   <input
                     type="text"
                     required
-                    placeholder="Enter Certificate / Registration Number"
+                    placeholder={
+                      selectedCategory === 'B.Tech Student'
+                        ? "Enter B.Tech Certificate No (e.g. TQ202651)"
+                        : "Enter Diploma Certificate Number"
+                    }
                     value={searchNumber}
                     onChange={(e) => setSearchNumber(e.target.value)}
                     className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 focus:border-blue-500 focus:bg-white rounded-2xl text-slate-800 font-semibold text-sm outline-none transition-all placeholder:text-slate-400 shadow-inner"
@@ -165,9 +281,13 @@ const Certificate = () => {
                 </div>
                 <button
                   type="submit"
-                  className="w-full mt-4 py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30 transition-all text-sm"
+                  className={`w-full mt-4 py-3.5 text-white font-bold rounded-2xl shadow-lg active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2 ${
+                    selectedCategory === 'Diploma Student'
+                      ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20 hover:shadow-amber-600/30'
+                      : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/20 hover:shadow-blue-500/30'
+                  }`}
                 >
-                  Verify Certificate
+                  Verify {selectedCategory} Certificate
                 </button>
               </form>
             </motion.div>
@@ -205,10 +325,10 @@ const Certificate = () => {
                 Certificate Not Found
               </h1>
               <p className="text-slate-500 text-xs sm:text-sm max-w-md mx-auto mb-6 font-medium">
-                The certificate number <strong className="text-slate-800 font-bold">"{searchNumber}"</strong> does not match any official record in our database.
+                The certificate number <strong className="text-slate-800 font-bold">"{searchNumber}"</strong> does not match any official record in our database for <strong className="text-slate-800 font-bold">{selectedCategory}</strong>.
               </p>
               <div className="bg-red-50/50 rounded-xl p-3 border border-red-100 text-red-800 text-[11px] leading-relaxed max-w-md mx-auto mb-8 font-semibold">
-                ⚠️ Verification Failed. Ensure the spelling/format is exactly as printed on the physical copy.
+                ⚠️ Verification Failed. Ensure the certificate number is entered exactly as printed on the physical copy.
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center max-w-sm mx-auto">
@@ -237,9 +357,18 @@ const Certificate = () => {
                 </div>
                 <div className="text-center sm:text-left">
                   <h3 className="text-emerald-800 font-black text-lg">Certificate Verified</h3>
-                  <p className="text-emerald-600 text-xs font-semibold">Official Internship Record Verified Authentically</p>
+                  <p className="text-emerald-600 text-xs font-semibold">
+                    Official {student.studentType || 'B.Tech Student'} Record Verified Authentically
+                  </p>
                 </div>
-                <div className="sm:ml-auto">
+                <div className="sm:ml-auto flex items-center gap-2">
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase border ${
+                    student.studentType === 'Diploma Student'
+                      ? 'bg-amber-100 text-amber-800 border-amber-300'
+                      : 'bg-blue-100 text-blue-800 border-blue-300'
+                  }`}>
+                    {student.studentType || 'B.Tech Student'}
+                  </span>
                   <span className={`inline-flex items-center px-3 py-1 rounded-full text-[10px] font-black tracking-wider uppercase border ${
                     student.status === 'Completed' 
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
@@ -274,6 +403,18 @@ const Certificate = () => {
                     <div className="grid grid-cols-3 p-3">
                       <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Certificate No</span>
                       <span className="col-span-2 font-mono font-bold text-slate-700">{student.certificateNumber}</span>
+                    </div>
+                    <div className="grid grid-cols-3 p-3">
+                      <span className="font-semibold text-slate-400 uppercase tracking-wider text-[10px]">Category</span>
+                      <span className="col-span-2">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                          student.studentType === 'Diploma Student'
+                            ? 'bg-amber-100 text-amber-800 border-amber-300'
+                            : 'bg-blue-100 text-blue-800 border-blue-300'
+                        }`}>
+                          {student.studentType || 'B.Tech Student'}
+                        </span>
+                      </span>
                     </div>
                     {student.college && (
                       <div className="grid grid-cols-3 p-3">

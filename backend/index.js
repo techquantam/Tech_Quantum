@@ -499,14 +499,15 @@ app.delete('/api/internship/gallery/:id', verifyAdmin, async (req, res) => {
 app.post('/api/admin/students', verifyAdmin, async (req, res) => {
   try {
     const { certificateNumber } = req.body;
+    const studentType = req.body.studentType || 'B.Tech Student';
     if (!certificateNumber) {
       return res.status(400).json({ error: 'Certificate Number is required.' });
     }
-    const existing = await models.Student.findOne({ certificateNumber });
+    const existing = await models.Student.findOne({ certificateNumber, studentType });
     if (existing) {
-      return res.status(400).json({ error: 'Certificate Number already exists.' });
+      return res.status(400).json({ error: `Certificate Number already exists for ${studentType}.` });
     }
-    const student = new models.Student(req.body);
+    const student = new models.Student({ ...req.body, studentType });
     await student.save();
     res.json(toFrontEnd(student));
   } catch (error) {
@@ -516,7 +517,7 @@ app.post('/api/admin/students', verifyAdmin, async (req, res) => {
 
 app.get('/api/admin/students', verifyAdmin, async (req, res) => {
   try {
-    const { search, course, page = 1, limit = 10 } = req.query;
+    const { search, course, studentType, page = 1, limit = 10 } = req.query;
     const query = {};
 
     if (search) {
@@ -528,6 +529,10 @@ app.get('/api/admin/students', verifyAdmin, async (req, res) => {
 
     if (course && course !== 'All') {
       query.course = course;
+    }
+
+    if (studentType && studentType !== 'All') {
+      query.studentType = studentType;
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -565,12 +570,15 @@ app.put('/api/admin/students/:id', verifyAdmin, async (req, res) => {
   try {
     const { certificateNumber } = req.body;
     if (certificateNumber) {
+      const currentDoc = await models.Student.findById(req.params.id);
+      const studentType = req.body.studentType || (currentDoc ? currentDoc.studentType : 'B.Tech Student');
       const existing = await models.Student.findOne({ 
         certificateNumber,
+        studentType,
         _id: { $ne: req.params.id }
       });
       if (existing) {
-        return res.status(400).json({ error: 'Certificate Number already exists.' });
+        return res.status(400).json({ error: `Certificate Number already exists for ${studentType}.` });
       }
     }
     const student = await models.Student.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -599,7 +607,11 @@ app.delete('/api/admin/students/:id', verifyAdmin, async (req, res) => {
 
 app.get('/api/verify/:registrationNumber', async (req, res) => {
   try {
-    const student = await models.Student.findOne({ certificateNumber: req.params.registrationNumber });
+    const query = { certificateNumber: req.params.registrationNumber };
+    if (req.query.type) {
+      query.studentType = req.query.type;
+    }
+    const student = await models.Student.findOne(query);
     if (student) {
       res.json(toFrontEnd(student));
     } else {

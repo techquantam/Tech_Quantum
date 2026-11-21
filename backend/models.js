@@ -64,11 +64,12 @@ const internGallerySchema = new mongoose.Schema({
 const InternGallery = mongoose.model('InternGallery', internGallerySchema);
 
 const studentSchema = new mongoose.Schema({
-  certificateNumber: { type: String, unique: true, required: true },
+  certificateNumber: { type: String, required: true },
   studentName: { type: String, required: true },
   college: String,
   branch: String,
   course: String,
+  studentType: { type: String, default: 'B.Tech Student' },
   internshipProgram: String,
   duration: String,
   issueDate: String,
@@ -76,6 +77,8 @@ const studentSchema = new mongoose.Schema({
   pdfUrl: String,
   status: { type: String, default: 'Completed' } // Completed / Revoked
 }, { timestamps: true });
+
+studentSchema.index({ certificateNumber: 1, studentType: 1 }, { unique: true });
 const Student = mongoose.model('Student', studentSchema);
 
 module.exports = {

@@ -51,6 +51,7 @@ const AdminDashboard = () => {
     college: '',
     branch: '',
     course: '',
+    studentType: 'B.Tech Student',
     internshipProgram: '',
     duration: '',
     issueDate: '',
@@ -63,6 +64,7 @@ const AdminDashboard = () => {
   const [students, setStudents] = useState([]);
   const [studentSearch, setStudentSearch] = useState('');
   const [studentCourseFilter, setStudentCourseFilter] = useState('All');
+  const [studentCategoryFilter, setStudentCategoryFilter] = useState('All');
   const [studentPage, setStudentPage] = useState(1);
   const [studentTotalPages, setStudentTotalPages] = useState(1);
   const [studentTotalCount, setStudentTotalCount] = useState(0);
@@ -362,6 +364,7 @@ const AdminDashboard = () => {
       const queryParams = new URLSearchParams({
         search: studentSearch,
         course: studentCourseFilter,
+        studentType: studentCategoryFilter,
         page: studentPage,
         limit: 10
       });
@@ -383,7 +386,7 @@ const AdminDashboard = () => {
     if (token && (activeTab === 'student_list' || activeTab === 'add_student' || activeTab === 'edit_student')) {
       fetchStudents();
     }
-  }, [token, activeTab, studentSearch, studentCourseFilter, studentPage]);
+  }, [token, activeTab, studentSearch, studentCourseFilter, studentCategoryFilter, studentPage]);
 
   const saveStudent = async (e) => {
     e.preventDefault();
@@ -444,6 +447,7 @@ const AdminDashboard = () => {
       college: '',
       branch: '',
       course: '',
+      studentType: 'B.Tech Student',
       internshipProgram: '',
       duration: '',
       issueDate: '',
@@ -463,6 +467,7 @@ const AdminDashboard = () => {
       college: student.college || '',
       branch: student.branch || '',
       course: student.course || '',
+      studentType: student.studentType || 'B.Tech Student',
       internshipProgram: student.internshipProgram || '',
       duration: student.duration || '',
       issueDate: student.issueDate || '',
@@ -1110,6 +1115,14 @@ const AdminDashboard = () => {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
+                  <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student Category *</label>
+                  <select value={studentForm.studentType || 'B.Tech Student'} onChange={e => setStudentForm({...studentForm, studentType: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-bold text-sm bg-white">
+                    <option value="B.Tech Student">B.Tech Student</option>
+                    <option value="Diploma Student">Diploma Student</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">College Name</label>
                   <input placeholder="e.g. Delhi Technological University" value={studentForm.college} onChange={e => setStudentForm({...studentForm, college: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
                 </div>
@@ -1192,7 +1205,18 @@ const AdminDashboard = () => {
                   className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:border-blue-500 outline-none text-slate-800 text-sm font-semibold"
                 />
               </div>
-              <div className="w-full md:w-64">
+              <div className="w-full md:w-56">
+                <select
+                  value={studentCategoryFilter}
+                  onChange={e => { setStudentCategoryFilter(e.target.value); setStudentPage(1); }}
+                  className="w-full border border-slate-200 p-2.5 rounded-xl focus:border-blue-500 outline-none text-slate-800 text-sm font-bold bg-white"
+                >
+                  <option value="All">All Categories</option>
+                  <option value="B.Tech Student">B.Tech Student</option>
+                  <option value="Diploma Student">Diploma Student</option>
+                </select>
+              </div>
+              <div className="w-full md:w-56">
                 <select
                   value={studentCourseFilter}
                   onChange={e => { setStudentCourseFilter(e.target.value); setStudentPage(1); }}
@@ -1219,6 +1243,7 @@ const AdminDashboard = () => {
                     <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
                       <th className="p-4">Certificate No</th>
                       <th className="p-4">Student Name</th>
+                      <th className="p-4">Category</th>
                       <th className="p-4">Course</th>
                       <th className="p-4">Status</th>
                       <th className="p-4 text-right">Actions</th>
@@ -1227,7 +1252,7 @@ const AdminDashboard = () => {
                   <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
                     {students.length === 0 ? (
                       <tr>
-                        <td colSpan="5" className="p-8 text-center text-slate-400 font-semibold">
+                        <td colSpan="6" className="p-8 text-center text-slate-400 font-semibold">
                           No student records found.
                         </td>
                       </tr>
@@ -1236,6 +1261,15 @@ const AdminDashboard = () => {
                         <tr key={student.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="p-4 font-mono font-bold text-slate-900">{student.certificateNumber}</td>
                           <td className="p-4 font-extrabold text-slate-800">{student.studentName}</td>
+                          <td className="p-4">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                              student.studentType === 'Diploma Student'
+                                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                : 'bg-blue-50 text-blue-800 border-blue-200'
+                            }`}>
+                              {student.studentType || 'B.Tech Student'}
+                            </span>
+                          </td>
                           <td className="p-4 font-semibold text-slate-600">{student.course || 'N/A'}</td>
                           <td className="p-4">
                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
@@ -1333,6 +1367,14 @@ const AdminDashboard = () => {
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student Name *</label>
                     <input required placeholder="e.g. Amit Kumar" value={studentForm.studentName} onChange={e => setStudentForm({...studentForm, studentName: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-semibold text-sm"/>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Student Category *</label>
+                    <select value={studentForm.studentType || 'B.Tech Student'} onChange={e => setStudentForm({...studentForm, studentType: e.target.value})} className="border border-slate-200 p-3 rounded-xl focus:border-blue-500 outline-none text-slate-800 font-bold text-sm bg-white">
+                      <option value="B.Tech Student">B.Tech Student</option>
+                      <option value="Diploma Student">Diploma Student</option>
+                    </select>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
